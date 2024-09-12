@@ -1,6 +1,6 @@
 package channels;
 
-abstract class Task extends Thread{
+public abstract class Task extends Thread{
 
     Broker broker;
     Runnable task;

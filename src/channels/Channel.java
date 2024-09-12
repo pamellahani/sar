@@ -1,10 +1,10 @@
 package channels;
 
-abstract class Channel {
+public abstract class Channel {
 
-    abstract int read(byte[] bytes, int offset, int length);
-    abstract int write(byte[] bytes, int offset, int length);
-    abstract void disconnect();
-    abstract boolean disconnected();
+    public abstract int read(byte[] bytes, int offset, int length);
+    public abstract int write(byte[] bytes, int offset, int length);
+    public abstract void disconnect();
+    public abstract boolean disconnected();
     
 }
