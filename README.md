@@ -13,7 +13,7 @@ This system is implemented in Java and is designed as a distributed system, allo
 
 ## 1. System Overview
 
-The communication layer facilitates the exchange of bytes between independent tasks via 
+The communication layer facilitpates the exchange of bytes between independent tasks via 
 channels managed by a broker. 
 These channels can be used to establish a bidirectional 
 communication flow between two tasks. This layer allows tasks to communicate without regard
@@ -50,6 +50,7 @@ The broker interface provides the following key methods:
 
 - `Channel connect(String host, int port)`: Allows a client task to connect to a channel by specifying the name of the server and the port number. The method returns a Channel object that the client will use to communicate with the server task. This method is used by clients to initiate communication.
 
+The broker is multi-threaded, meaning that it can handle multiple tasks concurrently.
 
 ### 3.2. Channel
 The medium through which tasks communicate. A channel abstracts the underlying circular buffer and provides methods for reading from and writing to the circular buffer.
@@ -59,13 +60,19 @@ The medium through which tasks communicate. A channel abstracts the underlying c
 The channel interface allows tasks to transmit and receive byte data through the following key methods:
 
 - `int read(byte[] bytes, int offset, int length)`: Reads bytes from the circular buffer into the provided byte array. It starts reading from the given offset until the specified length. Returns the number of bytes read. Returns -1 if the channel is disconnected. 
-WARNING: This method is blocking, meaning that it will wait until data is available to read, therefore, cannot return 0 bytes.
+  -   WARNING: This method is blocking, meaning that it will wait until data is available to read, therefore, cannot return 0 bytes.
 
-- `int write(byte[] bytes, int offset, int length)`: Writes bytes from the provided byte array into the circular buffer, starting from the given offset and writing up to the specified length. Returns the number of bytes written. Returns -1 if the channel is disconnected.
+- `int write(byte[] bytes, int offset, int length)`: Writes bytes from the provided byte array into the circular buffer, starting from the given offset and writing up to the specified length. Returns the number of bytes written. Returns -1 if the channel is disconnected. 
+  - WARNING: This method is blocking, meaning that it will wait until there is space in the buffer to write the data. 
 
 - `void disconnect()`: Disconnects the channel, preventing further communication.
 
 - `boolean disconnected()`: Returns true if the channel has been disconnected, indicating that no further data transmission is possible.
+
+FYI: read and write methods are mutually exclusive, meaning that a task cannot read and write at the same time.
+Therefore, the channel is not multi-threaded, and the task should manage the read and write operations.
+No ownership is fixed between thread and channel. 
+
 
 ### 3.3. Task
 Independent unit of execution that sends and receives byte sequences through communication channels. 
@@ -95,10 +102,11 @@ The circular buffer provides the following key methods:
 
 ## 4. Multi-threading Considerations
 
-The communication layer is designed to support multi-threaded environments, allowing tasks to communicate concurrently without any interference.
-
-
-
 ## 5. Limitations
 
 ## 6. Conclusion 
+
+
+TODO: 
+- write tests on return values of read and write methods 
+- write how asynchronous methods of connect and disconnect methods work. 
