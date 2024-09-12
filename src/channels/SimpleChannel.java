@@ -1,11 +1,9 @@
 package channels;
 
 public class SimpleChannel extends Channel{
-    
-    private CircularBuffer buffer;
 
     public SimpleChannel(CircularBuffer buffer) {
-        this.buffer = buffer;
+        //TODO: super(buffer); -> buffer is not yet defined in the scope of this class
     }
 
     @Override
