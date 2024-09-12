@@ -1,4 +1,4 @@
-# Specification for EchoServer, a Communication Layer Between Tasks
+# Specification for the EchoServer, a Communication Layer Between Tasks
 
 This specification outlines the design and functionality of a communication layer between 
 tasks, enabling byte-based data transfer. 
@@ -54,11 +54,14 @@ The broker interface provides the following key methods:
 ### 3.2. Channel
 The medium through which tasks communicate. A channel abstracts the underlying circular buffer and provides methods for reading from and writing to the circular buffer.
 
+#### TODO: write the properties and behaviors of the channel (FIFO lossless, bidirectionnel(full-duplex), byte-oriented)
+
 The channel interface allows tasks to transmit and receive byte data through the following key methods:
 
-- `int read(byte[] bytes, int offset, int length)`: Reads bytes from the circular buffer into the provided byte array. It starts reading from the given offset until the specified length. Returns the number of bytes read.
+- `int read(byte[] bytes, int offset, int length)`: Reads bytes from the circular buffer into the provided byte array. It starts reading from the given offset until the specified length. Returns the number of bytes read. Returns -1 if the channel is disconnected. 
+WARNING: This method is blocking, meaning that it will wait until data is available to read, therefore, cannot return 0 bytes.
 
-- `int write(byte[] bytes, int offset, int length)`: Writes bytes from the provided byte array into the circular buffer, starting from the given offset and writing up to the specified length. Returns the number of bytes written.
+- `int write(byte[] bytes, int offset, int length)`: Writes bytes from the provided byte array into the circular buffer, starting from the given offset and writing up to the specified length. Returns the number of bytes written. Returns -1 if the channel is disconnected.
 
 - `void disconnect()`: Disconnects the channel, preventing further communication.
 
@@ -90,12 +93,12 @@ The circular buffer provides the following key methods:
 
 - `byte pull()`: Retrieves and removes the next available byte. Returns the byte pulled from the buffer
 
-## 4. Communication Flow
+## 4. Multi-threading Considerations
 
-## 5. Error Handling
+The communication layer is designed to support multi-threaded environments, allowing tasks to communicate concurrently without any interference.
 
-## 6. Performance Considerations
 
-## 7. Limitations
 
-## 8. Conclusion 
+## 5. Limitations
+
+## 6. Conclusion 
