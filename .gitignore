@@ -1,2 +1,19 @@
+# Ignore log files
 *.log
-bin/*.class
+
+# Ignore compiled class files
+*.class
+
+# Ignore bin directory (where compiled files are stored)
+bin/
+
+# Ignore build directories
+build/
+out/
+target/
+
+# Ignore IDE-specific files
+# Eclipse
+.project
+.classpath
+.settings/
