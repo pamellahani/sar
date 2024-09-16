@@ -9,3 +9,6 @@ bin/
 
 # Ignore .settings directory (where Eclipse settings are stored)
 .settings/
+
+# Ignore .project file (Eclipse project file)
+.project
