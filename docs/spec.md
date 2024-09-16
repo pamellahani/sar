@@ -82,36 +82,37 @@ The channel interface provides the following key methods:
 
 ### 3.3. Task
 
-A **Task** is an independent unit of execution that communicates through channels. Tasks are represented as threads, allowing concurrent communication between multiple tasks within or across processes (we can have n tasks running on 1 broker). 
+A **Task** is an independent unit of execution that communicates through channels. Tasks are represented as threads, allowing concurrent communication between multiple tasks (we can have n tasks running on 1 broker). 
 
-A task is represented as a thread, therefore providing the following key methods:
+### Task Key Methods: 
+The task interface provides the following key methods:
 
-- `Task(Broker b, Runnable r)`: A constructor that initializes a task with a specific Broker to manage its communication channels and a Runnable task to define the work that the thread should execute.
-
-- `static Broker getBroker()`: This method allows a task to retrieve the broker it uses for managing channels. 
+| Method                              | Description                                                                                                               |
+|-------------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `Task(Broker b, Runnable r)`        | A constructor that initializes a task with a specific `Broker` to manage its communication channels and a `Runnable` to define the work that the thread should execute. |
+| `static Broker getBroker()`         | Allows a task to retrieve the `Broker` it uses for managing channels.                                                     |
 
 ### 3.4. Circular Buffer 
-Used within the channels to store the transmitted byte sequences in a FIFO manner.
+The **Circular Buffer** is used within the channels to store byte sequences in a **FIFO** manner.
 
 The circular buffer provides the following key methods:
 
-- `CircularBuffer(byte[] r)`: Initializes the circular buffer with the provided byte array. 
-
-- `boolean full()`: Returns true if the buffer is full, indicating that no more data can be written.
-  
-- `boolean empty()`: Returns true if the buffer is empty, indicating that no data is available for reading.
-  
-- `void push(byte b)`: Adds a new element to the buffer. Throws an `IllegalStateException `if the buffer is full.
-
-- `byte pull()`: Retrieves and removes the next available byte. Returns the byte pulled from the buffer. Throws an `IllegalStateException` if the buffer is empty. 
+| Method                          | Description                                                                                                        |
+|---------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| `CircularBuffer(byte[] r)`      | Initializes the circular buffer with the provided byte array.                                                      |
+| `boolean full()`                | Returns `true` if the buffer is full, indicating that no more data can be written.                                 |
+| `boolean empty()`               | Returns `true` if the buffer is empty, indicating that no data is available for reading.                          |
+| `void push(byte b)`             | Adds a new element to the buffer. Throws an `IllegalStateException` if the buffer is full.                         |
+| `byte pull()`                   | Retrieves and removes the next available byte. Returns the byte pulled from the buffer. Throws an `IllegalStateException` if the buffer is empty. |
+ 
 
 ## 4. Multi-threading Considerations
 
-The Broker is designed to handle multiple tasks concurrently, meaning it is thread-safe.
+**Broker Class**: The Broker is designed to handle multiple tasks concurrently, meaning it is thread-safe.
 
-The Channel is not multi-threaded. It is up to the tasks to manage synchronization when performing read and write operations.
+**Channel Class**: The Channel is not multi-threaded. It is up to the tasks to manage synchronization when performing read and write operations.
 
-Tasks can run in parallel using threads, but care must be taken when accessing shared resources or channels.
+**Task Class**: Tasks can run in parallel using threads, but care must be taken when accessing shared resources or channels.
 
 ## 5. Asynchronous Operations (read and write)
 | Method                   | Asynchronous Behavior                                                                                          |
@@ -120,15 +121,15 @@ Tasks can run in parallel using threads, but care must be taken when accessing s
 | `disconnect()`           | - Starts a **non-blocking** disconnection process.                                                           <br> - Marks the channel as "disconnected" and allows the task to proceed with other operations. <br> - Ongoing read/write operations receive an indication (e.g., return -1) once disconnection is complete.                       |
 
 
-## 5. Limitations
+## 6. Limitations
 
-- Fixed Buffer Size: The circular buffer has a fixed size, meaning tasks need to handle cases where the buffer becomes full or empty.
-  
-- Single-threaded Channels: Since read and write operations are not concurrent, this design may limit throughput in high-demand applications. Developers need to manage synchronization at the task level.
-- Blocking Operations: Both read and write methods are blocking, which means tasks may wait for data availability or buffer space.
-## 6. Conclusion 
+Due to design choices, certain concerns and limitations should be considered when using this communication layer:
+
+| Limitation              | Cause                                           | Solution                                                       |
+|-------------------------|-------------------------------------------------|---------------------------------------------------------------|
+| **Fixed Buffer Size**       | Circular buffer has a fixed size, which can lead to full or empty states. | Implement buffer size monitoring and handle full/empty states gracefully. Consider dynamic resizing if applicable. |
+| **Single-threaded Channels**| Read and write operations are not concurrent, limiting throughput. | Use task-level synchronization to manage read/write operations or implement a more complex multi-threaded channel design. |
+| **Blocking Operations**    | `read` and `write` methods are blocking, causing tasks to wait for data availability or buffer space. | Use non-blocking I/O operations or introduce asynchronous methods to improve responsiveness. |
 
 
-TODO: 
-- write tests on return values of read and write methods 
-- write how asynchronous methods of connect and disconnect methods work. 
+## 7. Conclusion 
