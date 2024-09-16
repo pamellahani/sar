@@ -6,3 +6,6 @@
 
 # Ignore bin directory (where compiled files are stored)
 bin/
+
+# Ignore .settings directory (where Eclipse settings are stored)
+.settings/
