@@ -1,4 +1,4 @@
-# Specification for Communication Layer Between Tasks
+# Specification Documentation for Communication Layer Between Tasks
 
 This document specifies the design and functionality of a communication layer between tasks for byte-based data transfer. This layer supports inter-process communication, which can occur on the same machine or across different machines.
 
@@ -33,10 +33,12 @@ This communication layer provides the following core functionalities:
 
 The **Broker** class is a service responsible for managing channels between tasks in a distributed system. A task can request a broker to create a new channel or to connect to an existing one. 
 
-#### Broker Properties and Behavior:
-The broker maintains a list of active channels and allows tasks to either create new channels or connect to existing ones, facilitating communication across different brokers (e.g., on different machines).
+#### <ins> Broker Properties and Behavior: </ins>
+- The broker maintains a list of active channels and allows tasks to either create new channels or connect to existing ones, facilitating communication across different brokers (e.g., on different machines).
 
-The system supports multiple brokers (one per entity, i.e. client/server) allowing tasks to communicate across different brokers.
+- The system supports multiple brokers (one per entity, i.e. client/server) allowing tasks to communicate across different brokers.
+
+
 
 The broker interface provides the following key methods:
 
@@ -46,7 +48,7 @@ The broker interface provides the following key methods:
 | `Channel connect(String host, int port)` | Allows a client task to connect to a channel by specifying the server's name and port number. Returns a `Channel` object that the client will use to communicate with the server task. This method is used by clients to initiate communication. |
 
 
-#### Key considerations 
+#### <ins>Key considerations </ins>
 - Each broker should have its **unique name** and **port number**, which can be used to identify and connect to the broker. 
 e.g., we can have :
   - `Broker server = new Broker("server", 8080);` 
@@ -56,7 +58,7 @@ e.g., we can have :
 ### 3.2. Channel
 The **Channel** service provides a medium through which tasks communicate. A channel abstracts the underlying circular buffer and provides methods for reading from and writing to the circular buffer.
 
-#### Channel Properties and Behavior:
+#### <ins>Channel Properties and Behavior:</ins>
 
 | **Property**       | **Description**                                                                                                                                                    |
 |--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -65,7 +67,7 @@ The **Channel** service provides a medium through which tasks communicate. A cha
 | **Byte-Oriented**  | The communication is based on raw byte streams, providing precise control over how data is packed, transmitted, and interpreted. It allows tasks to transmit and receive data incrementally without needing to buffer large chunks of structured data at once. |
 
 
-#### Channel Interface Methods
+#### <ins>Channel Interface Methods</ins>
 
 The channel interface provides the following key methods:
 
@@ -84,7 +86,7 @@ The channel interface provides the following key methods:
 
 A **Task** is an independent unit of execution that communicates through channels. Tasks are represented as threads, allowing concurrent communication between multiple tasks (we can have n tasks running on 1 broker). 
 
-### Task Key Methods: 
+#### <ins>Task Key Methods: </ins>
 The task interface provides the following key methods:
 
 | Method                              | Description                                                                                                               |
@@ -95,6 +97,7 @@ The task interface provides the following key methods:
 ### 3.4. Circular Buffer 
 The **Circular Buffer** is used within the channels to store byte sequences in a **FIFO** manner.
 
+#### <ins>Circular Buffer Key Methods: </ins>
 The circular buffer provides the following key methods:
 
 | Method                          | Description                                                                                                        |
@@ -108,11 +111,11 @@ The circular buffer provides the following key methods:
 
 ## 4. Multi-threading Considerations
 
-**Broker Class**: The Broker is designed to handle multiple tasks concurrently, meaning it is thread-safe.
+**<ins>Broker Class**: The Broker is designed to handle multiple tasks concurrently, meaning it is thread-safe.
 
-**Channel Class**: The Channel is not multi-threaded. It is up to the tasks to manage synchronization when performing read and write operations.
+**<ins>Channel Class**: The Channel is not multi-threaded. It is up to the tasks to manage synchronization when performing read and write operations.
 
-**Task Class**: Tasks can run in parallel using threads, but care must be taken when accessing shared resources or channels.
+**<ins>Task Class**: Tasks can run in parallel using threads, but care must be taken when accessing shared resources or channels.
 
 ## 5. Asynchronous Operations (read and write)
 | Method                   | Asynchronous Behavior                                                                                          |
