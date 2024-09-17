@@ -1,6 +1,6 @@
 package channels.tests;
 
-/*
+/**
  * USE CASE: 
  * Multiple EchoClients (here 3) can connect to a single EchoServer, send data, and 
  * receive the same data back (echoed by the server). 
@@ -13,6 +13,7 @@ public class Test {
 
     public static void main(String[] args) {
         int serverPort = 8080;
+        //int bufferSize = 256;
 
         // Start the Echo server
         EchoServerTest server = new EchoServerTest(serverPort);
