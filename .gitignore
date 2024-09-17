@@ -1,1 +1,6 @@
 *.log
+
+# Ignore javadoc config file
+src/channels/config.jdgenerator
+
+bin
