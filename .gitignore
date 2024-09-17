@@ -2,5 +2,7 @@
 
 # Ignore javadoc config file
 src/channels/config.jdgenerator
+src/config.jdgenerator
 
-bin
+bin/
+
