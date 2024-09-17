@@ -18,3 +18,6 @@ bin/
 
 # Ignore .classpath file (Eclipse classpath file)
 .classpath
+
+# Ignore javadoc config file
+src/channels/config.jdgenerator
