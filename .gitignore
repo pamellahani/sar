@@ -21,3 +21,5 @@ bin/
 
 # Ignore javadoc config file
 src/channels/config.jdgenerator
+
+.idea/
