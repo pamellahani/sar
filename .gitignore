@@ -24,3 +24,5 @@ src/channels/config.jdgenerator
 
 .project
 src/config.jdgenerator
+
+.idea/
