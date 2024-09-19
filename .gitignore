@@ -1,1 +1,13 @@
 *.log
+
+.project 
+
+.classpath
+
+.settings/
+
+bin/
+
+.idea/
+
+.metadata/
