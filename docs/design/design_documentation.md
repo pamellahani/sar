@@ -35,7 +35,7 @@ The design employs thread-safe structures to ensure smooth communication between
 #### 5. **Channel**
 - A `Channel` represents the communication link between two `Tasks`. 
   
-  Each `Channel` has **2 CircularBuffers:** 
+  Each `Channel` has **2 `CircularBuffer` instances:** 
     - One for reading (`inBuffer`) 
     - One for writing (`outBuffer`). 
 
@@ -48,10 +48,9 @@ The design employs thread-safe structures to ensure smooth communication between
 - Each `CircularBuffer` has two ends:
   - **`in`:** For reading data.
   - **`out`:** For writing data.
-- **FIFO, Lossless Operations:** The buffers support first-in, first-out operations, ensuring that messages are delivered in the order they were sent.
-- **Synchronized Access:** The `CircularBuffer` class is designed to handle concurrent access safely, providing thread-safe operations for pushing (writing) and pulling (reading) bytes.
+- The buffers support first-in, first-out operations, ensuring that messages are delivered in the order they were sent. Therefore, we can say that the `CircularBuffer` is a **FIFO Lossless buffer**. Furhtermore, the `CircularBuffer` class is designed to handle concurrent access safely, providing thread-safe operations for pushing (writing) and pulling (reading) bytes.
 
-### Detailed Flow
+### Detailed Flow of Communication
 
 #### **Connection Establishment**
 1. A `Task` starts by calling `getBroker()` to obtain a reference to its associated `Broker`.
@@ -59,10 +58,11 @@ The design employs thread-safe structures to ensure smooth communication between
    - **`accept(port)`:** Creates an `Rdv` instance in the `Broker`. This operation is blocking and waits for a corresponding `connect` operation.
    - **`connect()`**: Looks for an existing `Rdv`. If none exists, it creates a new one. Multiple `connect` operations generate new `Rdv` instances if required.
    
-3. **Rdv Coordination:** The `Rdv` coordinates between `connect` and `accept`:
+3.  The `Rdv` coordinates between `connect` and `accept`:
    - If an `accept` is called first, it transitions the `Rdv` state to "opening."
-   - If a `connect` is called, it checks for a matching `Rdv`. If found, it transitions the `Rdv` state to "closing," creating the `Channel` and `CircularBuffers`.
-   - The second operation to arrive (`connect` after `accept`, or vice versa) triggers the completion of the rendez-vous, enabling data exchange through the channel.
+   - If a `connect` is called, it checks for a matching `Rdv`. 
+   - If found, it transitions the `Rdv` state to "closing," creating the `Channel` and the associated `CircularBuffers`.
+
 
 #### **Data Exchange**
 1. The `Channel` created by the `Rdv` is used for communication between the `Tasks`.
@@ -72,10 +72,8 @@ The design employs thread-safe structures to ensure smooth communication between
 
 #### **Asynchronous Disconnection**
 1. When a `Task` initiates a disconnection, the `Channel` transitions to a `disconnecting` state.
-2. The `Channel` performs an asynchronous disconnection:
-   - It waits for the buffers to complete any ongoing read or write operations.
-   - Once the buffers are empty and no further operations are pending, it sets the channel's state to `disconnected`.
-3. The `Rdv` and `Broker` are informed of the disconnection. The `Rdv` is removed, and the `Broker` is updated accordingly.
+2. The `Channel` performs an asynchronous disconnection, it waits for the buffers to complete any ongoing read or write operations. Once the buffers are empty and no further operations are pending, it sets the channel's state to `disconnected`.
+1. The `Rdv` and `Broker` are informed of the disconnection. The `Rdv` is removed, and the `Broker` is updated accordingly.
 
 ### Thread-Safety Considerations
 - **Broker and BrokerManager:** These are thread-safe, ensuring that concurrent `connect` and `accept` operations do not cause data races or inconsistencies.
