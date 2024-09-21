@@ -18,6 +18,17 @@ public class SimpleBroker extends Broker {
         throw new UnsupportedOperationException("Unimplemented method 'connect'");
     }
 
+    @Override
+    public String getName() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getName'");
+    }
+
+    public BrokerManager getManager() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getManager'");
+    }
+
 
     
 }
