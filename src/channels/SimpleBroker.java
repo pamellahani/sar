@@ -2,31 +2,35 @@ package channels;
 
 public class SimpleBroker extends Broker {
     
-    public SimpleBroker(String name) {
+    public SimpleBroker(String name, BrokerManager manager) {
         super(name);
+        this.manager = manager;
     }
 
     @Override
     public Channel accept(int port) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'accept'");
+        Rdv rdvPoint = manager.accept(port, this);
+        return rdvPoint.getChannel();
     }
 
     @Override
     public Channel connect(String name, int port) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'connect'");
+        // check if broker exists in the broker manager
+        Broker broker = manager.getBroker(name);
+        if (broker == null) {
+            throw new IllegalArgumentException("Broker not found: " + name);
+        }
+        Rdv rdvPoint = manager.connect(port, this);
+        return rdvPoint.getChannel();
     }
 
     @Override
     public String getName() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getName'");
+        return name;
     }
 
     public BrokerManager getManager() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getManager'");
+        return manager;
     }
 
 

@@ -31,8 +31,16 @@ public class Rdv {
     }
 
     // Create the communication channel and set up CircularBuffers here
-    private void createChannel() {
-        //TODO: Implement channel creation here 
+    private Channel createChannel() {
+        return new SimpleChannel(new CircularBuffer(256)); // TODO: may need to change buffer size
     }
+
+    public Channel getChannel() {
+        if (brokerAcceptor == null || brokerConnector == null) {
+            throw new IllegalStateException("Cannot create channel: missing broker");
+        }
+        return createChannel();
+    }
+
 }
 
