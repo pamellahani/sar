@@ -32,7 +32,7 @@ public class Rdv {
 
     // Create the communication channel and set up CircularBuffers here
     private Channel createChannel() {
-        return new SimpleChannel(new CircularBuffer(256)); // TODO: may need to change buffer size
+        return new SimpleChannel(new CircularBuffer(1024)); // TODO: may need to change buffer size
     }
 
     public Channel getChannel() {
