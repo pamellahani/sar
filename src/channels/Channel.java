@@ -9,6 +9,10 @@ package channels;
 
 public abstract class Channel {
 
+    protected CircularBuffer inBuffer;
+    protected CircularBuffer outBuffer;
+    protected boolean isDisconnected;
+
     public abstract int read(byte[] bytes, int offset, int length);
     public abstract int write(byte[] bytes, int offset, int length);
     public abstract void disconnect();
