@@ -9,7 +9,7 @@ public class SimpleChannel extends Channel{
     }
 
     @Override
-    public int read(byte[] bytes, int offset, int length) {
+    public synchronized int read(byte[] bytes, int offset, int length) {
         if (isDisconnected) {
             return -1;
         }
@@ -24,7 +24,7 @@ public class SimpleChannel extends Channel{
     }
 
     @Override
-    public int write(byte[] bytes, int offset, int length) {
+    public synchronized int write(byte[] bytes, int offset, int length) {
         if (isDisconnected) {
             return -1;
         }
