@@ -76,7 +76,7 @@ The design employs thread-safe structures to ensure smooth communication between
 1. The `Rdv` and `Broker` are informed of the disconnection. The `Rdv` is removed, and the `Broker` is updated accordingly.
 
 ### Thread-Safety Considerations
-- **Broker and BrokerManager:** These are thread-safe, ensuring that concurrent `connect` and `accept` operations do not cause data races or inconsistencies.
-- **Rdv:** Synchronization within `Rdv` ensures that only one `connect` and one `accept` can complete the rendez-vous, avoiding race conditions.
-- **CircularBuffer:** The buffer implements synchronized push and pull methods to prevent concurrent access issues during read and write operations.
-
+The following  classes are designed to be thread-safe:
+- `Broker`
+- `BrokerManager`
+- `Rdv`
