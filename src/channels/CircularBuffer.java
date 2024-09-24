@@ -1,6 +1,7 @@
-package channels; 
+package channels;
 
-/**
+
+/*
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +19,7 @@ package channels;
  *      Author: Pr. Olivier Gruber <olivier dot gruber at acm dot org>
  */
 
-public class CircularBuffer {
+ class CircularBuffer {
 
 	int m_capacity;
 	int m_start, m_end;
