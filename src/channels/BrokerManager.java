@@ -43,12 +43,12 @@ public class BrokerManager {
 
     // register a broker with the broker manager
     public synchronized void registerBroker(Broker broker) {
-        brokers.put(broker.getName(), broker);
+        brokers.put(broker.name, broker);
     }
 
     // deregister a broker from the broker manager when no longer needed
-    public synchronized void deregisterBroker(String name) {
-        brokers.remove(name);
+    public synchronized void deregisterBroker(Broker broker) {
+        brokers.remove(broker.name, broker);
     }
 
     // remove an Rdv when it is no longer needed (e.g., after disconnection)

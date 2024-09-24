@@ -24,11 +24,6 @@ public class SimpleBroker extends Broker {
         return rdvPoint.getChannel();
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
     public BrokerManager getManager() {
         return manager;
     }
