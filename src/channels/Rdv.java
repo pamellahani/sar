@@ -17,18 +17,21 @@ public class Rdv {
             this.brokerAcceptor = broker;
             if (brokerConnector != null) {
                 createChannel();
+                System.out.println("Channel created between acceptor and connector");
             }
         }
     }
-
+    
     public void connect(Broker broker) {
         synchronized (lock) {
             this.brokerConnector = broker;
             if (brokerAcceptor != null) {
                 createChannel();
+                System.out.println("Channel created between connector and acceptor");
             }
         }
     }
+    
 
     // Create the communication channel and set up CircularBuffers here
     private Channel createChannel() {
