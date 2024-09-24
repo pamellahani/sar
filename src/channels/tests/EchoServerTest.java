@@ -1,6 +1,7 @@
 package channels.tests;
 
 import channels.Broker;
+import channels.BrokerManager;
 import channels.Channel;
 import channels.SimpleBroker;
 import channels.SimpleTask;
@@ -12,6 +13,7 @@ public class EchoServerTest {
     private Broker serverBroker;
     private Task serverTask;
     private CircularBuffer buffer;
+    private BrokerManager brokerManager;
 
     /**
      * 
@@ -23,9 +25,11 @@ public class EchoServerTest {
     public EchoServerTest(int port) {
 
         this.buffer = new CircularBuffer(256);
-
+        this.brokerManager = new BrokerManager();
+        
         // Create a new server broker and accept a connection on the specified port
-        this.serverBroker = new SimpleBroker("EchoServer");
+        this.serverBroker = new SimpleBroker("EchoServer", brokerManager);
+        brokerManager.registerBroker(serverBroker);
         Channel serverChannel = this.serverBroker.accept(port);
 
         // Define the server task 

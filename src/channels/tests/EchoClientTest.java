@@ -3,6 +3,7 @@ package channels.tests;
 import channels.Task;
 
 import channels.Broker;
+import channels.BrokerManager;
 import channels.Channel;
 import channels.SimpleBroker;
 import channels.SimpleTask;
@@ -14,11 +15,14 @@ public class EchoClientTest {
 
     private String echoedMessage;
     private String originalMessage;
+    private BrokerManager brokerManager;
 
     public EchoClientTest(String message, int port) {
         this.originalMessage = message;
+        this.brokerManager = new BrokerManager();
         // Create a new client broker 
-        this.clientBroker = new SimpleBroker("EchoClient");
+        this.clientBroker = new SimpleBroker("EchoClient", brokerManager);
+        brokerManager.registerBroker(clientBroker);
        
         // Define the client task
         this.clientTask = new SimpleTask(clientBroker, () -> {
@@ -33,6 +37,7 @@ public class EchoClientTest {
                 echoedMessage = new String(response, 0, bytesRead);
             }
             clientChannel.disconnect();
+            this.brokerManager.deregisterBroker(clientBroker);;
         });
     }
 
