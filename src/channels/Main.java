@@ -2,32 +2,27 @@ package channels;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-        
         BrokerManager brokerManager = new BrokerManager();
         Broker serverBroker = new SimpleBroker("EchoServer", brokerManager);
-        brokerManager.registerBroker(serverBroker);
-
+        brokerManager.registerBroker(serverBroker);  // Register the server broker first
+    
+        // Start server task
         SimpleTask serverTask = new SimpleTask(serverBroker, () -> {
             try {
-                startEchoServer(8080, brokerManager);  
+                startEchoServer(8080, brokerManager);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
-        serverTask.start();  
-        
-        // Delay the client startup to ensure server is ready
-        Thread.sleep(1000);
-        
-       
-        // Create two client tasks
-        Broker  client1Broker = new SimpleBroker("ClientBroker1", brokerManager);
+        serverTask.start();
+    
+        // Add a delay to allow the server to fully initialize
+        Thread.sleep(1000);  // Ensure the server has time to start before clients connect
+    
+        // create and start the client task
+        Broker client1Broker = new SimpleBroker("ClientBroker1", brokerManager);
         brokerManager.registerBroker(client1Broker);
-
-        // Broker client2Broker = new SimpleBroker("ClientBroker2", brokerManager);
-        //brokerManager.registerBroker(client2Broker);
-
-        // Start client task
+    
         SimpleTask clientTask1 = new SimpleTask(client1Broker, () -> {
             try {
                 startEchoClient("Client 1", 8080, "Hello from Client 1", brokerManager);
@@ -35,9 +30,11 @@ public class Main {
                 e.printStackTrace();
             }
         });
+    
         clientTask1.start();
-
     }
+    
+    
 
 
     public static void startEchoServer(int port, BrokerManager brokerManager) throws InterruptedException {

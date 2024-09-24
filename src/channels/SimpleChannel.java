@@ -35,10 +35,11 @@ public class SimpleChannel extends Channel{
             outBuffer.push(bytes[i]);
             bytesWritten++;
         }
-
+    
         System.out.println("Channel wrote " + bytesWritten + " bytes to the outBuffer.");
         return bytesWritten;
     }
+    
 
     @Override
     public void disconnect() {

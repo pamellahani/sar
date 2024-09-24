@@ -5,8 +5,7 @@ package channels;
  * It provides methods for accepting and connecting brokers, and creating a communication channel between them.
  */
 
-public class Rdv {
-
+ public class Rdv {
     private Broker brokerAcceptor;
     private Broker brokerConnector;
 
@@ -15,27 +14,27 @@ public class Rdv {
     public void accept(Broker broker) {
         synchronized (lock) {
             this.brokerAcceptor = broker;
+            System.out.println("Broker acceptor registered: " + broker.name);
             if (brokerConnector != null) {
                 createChannel();
                 System.out.println("Channel created between acceptor and connector");
             }
         }
     }
-    
+
     public void connect(Broker broker) {
         synchronized (lock) {
             this.brokerConnector = broker;
+            System.out.println("Broker connector registered: " + broker.name);
             if (brokerAcceptor != null) {
                 createChannel();
                 System.out.println("Channel created between connector and acceptor");
             }
         }
     }
-    
 
-    // Create the communication channel and set up CircularBuffers here
     private Channel createChannel() {
-        return new SimpleChannel(new CircularBuffer(1024)); // TODO: may need to change buffer size
+        return new SimpleChannel(new CircularBuffer(1024));  // Ensure a valid buffer size
     }
 
     public Channel getChannel() {
@@ -44,6 +43,4 @@ public class Rdv {
         }
         return createChannel();
     }
-
 }
-
