@@ -2,14 +2,13 @@ package channels;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-        BrokerManager manager = new BrokerManager();
-
-        // Create the broker for the client and server
-        SimpleBroker serverBroker = new SimpleBroker("ServerBroker", manager);
-        SimpleBroker clientBroker = new SimpleBroker("ClientBroker", manager);
 
         // Register brokers in the broker manager
-        BrokerManager brokerManager = new BrokerManager();
+        BrokerManager brokerManager = new BrokerManager(); 
+
+        // Create the broker for the client and server
+        SimpleBroker serverBroker = new SimpleBroker("ServerBroker", brokerManager);
+        SimpleBroker clientBroker = new SimpleBroker("ClientBroker", brokerManager);;
         
         brokerManager.registerBroker(serverBroker);
         brokerManager.registerBroker(clientBroker);
@@ -30,6 +29,8 @@ public class Main {
                 e.printStackTrace();
             }
         }) {};
+
+        Thread.sleep(1000);  // Ensure server is ready before the client starts
 
         // Client task: Connect to the server and send a message
         Task clientTask = new Task(clientBroker, () -> {
