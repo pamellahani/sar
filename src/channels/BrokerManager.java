@@ -17,7 +17,7 @@ public class BrokerManager {
     public synchronized Broker getBrokerFromBM(String name) {
         Broker broker = brokers.get(name);
         if (broker == null) {
-            System.out.println("Broker with name " + name + " not found.");
+            throw new IllegalArgumentException("Broker with name " + name + " not found.");
         }
         return broker;
     }
