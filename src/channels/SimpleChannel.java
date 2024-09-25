@@ -1,70 +1,69 @@
 package channels;
 
-public class SimpleChannel extends Channel{
+public class SimpleChannel extends Channel {
 
-    private Broker broker;
-    private int port;
+    private Broker clientBroker;
+    private Broker serverBroker;
+    private CircularBuffer clientInBuffer;
+    private CircularBuffer serverInBuffer;
+    private CircularBuffer clientOutBuffer;
+    private CircularBuffer serverOutBuffer;
+    private boolean isDisconnected;
 
-    public SimpleChannel(Broker b , int port){
-        this.broker = b;
-        this.port = port;
-        this.inBuffer = new CircularBuffer(1024); 
-        this.outBuffer = new CircularBuffer(1024);
-        this.isDisconnected = false;  // Initially, the channel is connected
+    private static final int bufferSize = 1024;
+
+    public SimpleChannel(Broker clientBroker, Broker serverBroker) {
+        this.clientBroker = clientBroker;
+        this.serverBroker = serverBroker;
+        this.clientInBuffer = new CircularBuffer(bufferSize); // Client's inBuffer
+        this.serverInBuffer = new CircularBuffer(bufferSize); // Server's inBuffer
+        this.clientOutBuffer = serverInBuffer; // Client's outBuffer is Server's inBuffer
+        this.serverOutBuffer = clientInBuffer; // Server's outBuffer is Client's inBuffer
+        this.isDisconnected = false; // Channel is initially connected
     }
 
-
     @Override
-    public synchronized int read(byte[] bytes, int offset, int length) throws DisconnectedException {
-        while (inBuffer.empty()) {  // Block if no bytes are available
-            if (isDisconnected) {
-                throw new DisconnectedException("Channel is disconnected.");
-            }
-    
-            try {
-                wait();  // Block until notified (e.g., when new bytes are written)
-            } catch (InterruptedException e) {
-                //throw new DisconnectedException("Thread was interrupted while waiting to read.");
-            }
-        }
-    
+    public synchronized int read(byte[] bytes, int offset, int length) {
+        CircularBuffer inBuffer = (clientBroker != null) ? clientInBuffer : serverInBuffer; // Determine if client or server buffer should be read
         int bytesRead = 0;
-        for (int i = offset; i < offset + length && !inBuffer.empty(); i++) {
-            bytes[i] = inBuffer.pull();
-            bytesRead++;
+
+        try {
+            for (int i = 0; i < length; i++) {
+                if (inBuffer.empty()) break;
+                bytes[offset + i] = inBuffer.pull();
+                bytesRead++;
+            }
+        } catch (IllegalStateException e) {
+            System.out.println("Buffer is empty, cannot read.");
         }
-    
-        System.out.println("Channel read " + bytesRead + " bytes from the inBuffer.");
+
         return bytesRead;
     }
-    
-    
+
     @Override
-    public synchronized int write(byte[] bytes, int offset, int length) throws DisconnectedException {
-        if (isDisconnected) {
-            throw new DisconnectedException("Channel is disconnected.");
-        }
-
+    public synchronized int write(byte[] bytes, int offset, int length) {
+        CircularBuffer outBuffer = (clientBroker != null) ? clientOutBuffer : serverOutBuffer; // Determine if client or server buffer should be written
         int bytesWritten = 0;
-        for (int i = offset; i < offset + length && !outBuffer.full(); i++) {
-            outBuffer.push(bytes[i]);
-            bytesWritten++;
+
+        try {
+            for (int i = 0; i < length; i++) {
+                outBuffer.push(bytes[offset + i]);
+                bytesWritten++;
+            }
+        } catch (IllegalStateException e) {
+            System.out.println("Buffer is full, cannot write.");
         }
 
-        notify();  // Notify waiting reader when bytes are written. we cannot have 2 readers at the same time
-        System.out.println("Channel wrote " + bytesWritten + " bytes to the outBuffer.");
         return bytesWritten;
     }
 
     @Override
-    public synchronized void disconnect() {
-        isDisconnected = true;
-        notifyAll();  // Notify all waiting threads that the channel is disconnected
+    public void disconnect() {
+        this.isDisconnected = true;
     }
 
     @Override
     public boolean disconnected() {
-       return isDisconnected;
+        return this.isDisconnected;
     }
-    
 }

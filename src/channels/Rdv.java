@@ -8,8 +8,8 @@ package channels;
 public class Rdv {
     private Broker brokerAcceptor;
     private Broker brokerConnector;
-    private SimpleChannel accepting_channel;  // Store the channel once it is created
-    private SimpleChannel connecting_channel;  // Store the channel once it is created
+    private SimpleChannel acceptingChannel;  // Store the channel once it is created
+    private SimpleChannel connectingChannel;  // Store the channel once it is created
     private final Object lock = new Object();
 
     private void waitForBrokers() {
@@ -20,6 +20,7 @@ public class Rdv {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt(); // Interrupt current thread if needed
             }
         }
     }
@@ -46,13 +47,13 @@ public class Rdv {
             }
 
             // If the channel is already created, return it
-            if (accepting_channel != null) {
-                return accepting_channel;
+            if (acceptingChannel != null) {
+                return acceptingChannel;
             }
 
             // Create a new SimpleChannel if not created yet
-            accepting_channel = new SimpleChannel(this.brokerAcceptor, port);
-            return accepting_channel;
+            acceptingChannel = new SimpleChannel(this.brokerAcceptor, this.brokerConnector);
+            return acceptingChannel;
         }
     }
 
@@ -68,22 +69,22 @@ public class Rdv {
             this.brokerConnector = broker;
 
             // If the channel is already created, return it
-            if (connecting_channel != null) {
-                return connecting_channel;
+            if (connectingChannel != null) {
+                return connectingChannel;
             }
 
             // If the acceptor is already registered, create a SimpleChannel
             if (brokerAcceptor != null) {
-                connecting_channel = new SimpleChannel(this.brokerConnector, port);
-                return connecting_channel;
+                connectingChannel = new SimpleChannel(this.brokerConnector, this.brokerAcceptor);
+                return connectingChannel;
             }
 
             // Wait for the acceptor to be registered
             waitForBrokers();
 
             // Create a SimpleChannel once the acceptor is registered
-            connecting_channel = new SimpleChannel(this.brokerConnector, port);
-            return connecting_channel;
+            connectingChannel = new SimpleChannel(this.brokerConnector, this.brokerAcceptor);
+            return connectingChannel;
         }
     }
 }
