@@ -14,22 +14,18 @@ public class BrokerManager {
     }
 
 
-    public synchronized Broker getBroker(String name) {
-        return brokers.get(name);
+    public synchronized Broker getBrokerFromBM(String name) {
+        Broker broker = brokers.get(name);
+        if (broker == null) {
+            System.out.println("Broker with name " + name + " not found.");
+        }
+        return broker;
     }
-
-    // register a broker with the broker manager
+    
     public synchronized void registerBroker(Broker broker) {
-
-        if (broker == null || broker.getName() == null || broker.getName().isEmpty()) {
-            throw new IllegalArgumentException("Broker or broker name cannot be null or empty.");
-        }
-        if (brokers.containsKey(broker.getName())) {
-            throw new IllegalArgumentException("Broker with name " + broker.getName() + " already exists.");
-        }
+        System.out.println("Registering broker: " + broker.getName());
         brokers.put(broker.getName(), broker);
     }
-
 
 
     // Deregisters a broker from the broker manager
