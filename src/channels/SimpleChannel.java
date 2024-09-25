@@ -3,7 +3,7 @@ package channels;
 public class SimpleChannel extends Channel {
 
     private Broker clientBroker;
-    private Broker serverBroker;
+    //private Broker serverBroker;
     private CircularBuffer clientInBuffer;
     private CircularBuffer serverInBuffer;
     private CircularBuffer clientOutBuffer;
@@ -14,7 +14,7 @@ public class SimpleChannel extends Channel {
 
     public SimpleChannel(Broker clientBroker, Broker serverBroker) {
         this.clientBroker = clientBroker;
-        this.serverBroker = serverBroker;
+        //this.serverBroker = serverBroker;
         this.clientInBuffer = new CircularBuffer(bufferSize); // Client's inBuffer
         this.serverInBuffer = new CircularBuffer(bufferSize); // Server's inBuffer
         this.clientOutBuffer = serverInBuffer; // Client's outBuffer is Server's inBuffer

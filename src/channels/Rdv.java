@@ -16,11 +16,13 @@ public class Rdv {
         synchronized (lock) {
             try {
                 while (brokerAcceptor == null || brokerConnector == null) {
-                    lock.wait();
+                    System.out.println("Waiting for both brokers to be registered...");
+                    lock.wait();  // Wait for both brokers to be registered
                 }
+                System.err.println("Both brokers are now registered.");
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                Thread.currentThread().interrupt(); // Interrupt current thread if needed
+                Thread.currentThread().interrupt();  // Interrupt current thread if needed
             }
         }
     }
@@ -35,11 +37,15 @@ public class Rdv {
             }
 
             this.brokerAcceptor = broker;
+            System.out.println("Acceptor broker registered for port " + port);
 
+            // Notify all waiting threads that the acceptor has been registered
+            lock.notifyAll();
+
+            // If the brokerConnector is not yet registered, wait for it
             if (this.brokerConnector == null) {
-                // Wait for the connector to be registered
                 try {
-                    lock.wait(); // Wait for the brokerConnector to be set
+                    lock.wait();  // Wait for the brokerConnector to be set
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw new IllegalStateException("Thread was interrupted while waiting for connector.", e);
@@ -67,20 +73,20 @@ public class Rdv {
             }
 
             this.brokerConnector = broker;
+            System.out.println("Connector broker registered for port " + port);
+
+            // Notify all waiting threads that the connector has been registered
+            lock.notifyAll();
+
+            // If the brokerAcceptor is not yet registered, wait for it
+            if (brokerAcceptor == null) {
+                waitForBrokers();
+            }
 
             // If the channel is already created, return it
             if (connectingChannel != null) {
                 return connectingChannel;
             }
-
-            // If the acceptor is already registered, create a SimpleChannel
-            if (brokerAcceptor != null) {
-                connectingChannel = new SimpleChannel(this.brokerConnector, this.brokerAcceptor);
-                return connectingChannel;
-            }
-
-            // Wait for the acceptor to be registered
-            waitForBrokers();
 
             // Create a SimpleChannel once the acceptor is registered
             connectingChannel = new SimpleChannel(this.brokerConnector, this.brokerAcceptor);
