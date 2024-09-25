@@ -1,111 +1,60 @@
 package channels;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+
+        // Register brokers in the broker manager
+        BrokerManager brokerManager = new BrokerManager(); 
+
+        // Create the broker for the client and server
+        SimpleBroker serverBroker = new SimpleBroker("ServerBroker", brokerManager);
+        SimpleBroker clientBroker = new SimpleBroker("ClientBroker", brokerManager);;
         
-        BrokerManager brokerManager = new BrokerManager();
-        Broker serverBroker = new SimpleBroker("EchoServer", brokerManager);
         brokerManager.registerBroker(serverBroker);
+        brokerManager.registerBroker(clientBroker);
 
-        SimpleTask serverTask = new SimpleTask(serverBroker, () -> {
+        // Server task: Accept connections and read the message from the client
+        Task serverTask = new Task(serverBroker, () -> {
             try {
-                startEchoServer(8080, brokerManager);  
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-
-        serverTask.start();  
-
-        // Create two client tasks
-        Broker  client1Broker = new SimpleBroker("ClientBroker1", brokerManager);
-        brokerManager.registerBroker(client1Broker);
-
-        // Broker client2Broker = new SimpleBroker("ClientBroker2", brokerManager);
-        //brokerManager.registerBroker(client2Broker);
-
-        SimpleTask clientTask1 = new SimpleTask(client1Broker, () -> {
-            try {
-                startEchoClient("Client 1", 8080, "Hello from Client 1", brokerManager);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-
-        clientTask1.start();
-
-    }
-
-
-    public static void startEchoServer(int port, BrokerManager brokerManager) throws InterruptedException {
-        Broker serverBroker = brokerManager.getBroker("EchoServer");
-    
-        while (true) {
-            System.out.println("Server is waiting for connections on port " + port + "...");
-            Channel serverChannel = serverBroker.accept(port);  // Blocking accept
-            System.out.println("Server accepted a connection.");
-    
-            // Handle each client connection with a SimpleTask
-            SimpleTask clientHandlerTask = new SimpleTask(serverBroker, () -> {
-                try {
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-    
-                    // Echo loop
-                    while ((bytesRead = serverChannel.read(buffer, 0, buffer.length)) > 0) {
-                        System.out.println("Server received: " + new String(buffer, 0, bytesRead));
-                        // Echo the message back to the client
-                        serverChannel.write(buffer, 0, bytesRead);
-                    }
-    
-                    if (serverChannel.disconnected()) {
-                        System.out.println("Connection closed by the client.");
-                    }
-    
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    serverChannel.disconnect();
-                    System.out.println("Connection closed by the server.");
+                System.out.println("Server waiting for connection...");
+                Channel channel = serverBroker.accept(8080);
+                byte[] buffer = new byte[1024];
+                int bytesRead = channel.read(buffer, 0, buffer.length);
+                if (bytesRead > 0) {
+                    String receivedMessage = new String(buffer, 0, bytesRead);
+                    System.out.println("Server received: " + receivedMessage);
                 }
-            });
-    
-            // Start the client handler task
-            clientHandlerTask.start();
-        }
-    }
-    
+                channel.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }) {};
 
-    public static void startEchoClient(String clientName, int port, String message, BrokerManager brokerManager) throws InterruptedException {
-        Broker clientBroker = new SimpleBroker(clientName, brokerManager);
-    
-        // Connect to the server
-        Channel clientChannel = clientBroker.connect("EchoServer", port);
-        System.out.println(clientName + " connected to the server.");
-    
-        // Send a message to the server
-        byte[] messageBytes = message.getBytes();
-        clientChannel.write(messageBytes, 0, messageBytes.length);
-        System.out.println(clientName + " sent: " + message);
-    
-        // Wait for the echoed message from the server
-        byte[] buffer = new byte[1024];
-        int bytesRead = clientChannel.read(buffer, 0, buffer.length);
-    
-        if (bytesRead > 0) {
-            String receivedMessage = new String(buffer, 0, bytesRead);
-            System.out.println(clientName + " received echo: " + receivedMessage);
-        }
-    
-        // bug solution fix infinite loop 
-        Thread.sleep(1000);  
-    
-        // Disconnect the client after communication
-        clientChannel.disconnect();
-        System.out.println(clientName + " disconnected from the server.");
-    }
-    
+        Thread.sleep(1000);  // Ensure server is ready before the client starts
 
+        // Client task: Connect to the server and send a message
+        Task clientTask = new Task(clientBroker, () -> {
+            try {
+                System.out.println("Client connecting to server...");
+                Channel channel = clientBroker.connect("ServerBroker", 8080);
+                byte[] message = "Hello World".getBytes();
+                channel.write(message, 0, message.length);
+                System.out.println("Client sent: Hello World");
+                channel.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }) {};
+
+        // Run the server and client tasks in separate threads
+        serverTask.start();
+        Thread.sleep(1000);  // Ensure server is ready before the client starts
+        clientTask.start();
+
+        // Wait for both tasks to complete
+        serverTask.join();
+        clientTask.join();
+
+        System.out.println("Communication finished.");
+    }
 }
-    
-

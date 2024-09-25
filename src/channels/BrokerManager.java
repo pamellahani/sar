@@ -8,52 +8,41 @@ public class BrokerManager {
     // Stores all the brokers with their associated names
     private final Map<String, Broker> brokers;
     
-    // Stores the rendez-vous (Rdv) points for connections
-    private final Map<Integer, Rdv> rdvPoints; // Keyed by port number for each connection
 
     public BrokerManager() {
         this.brokers = new ConcurrentHashMap<>();
-        this.rdvPoints = new ConcurrentHashMap<>();
     }
 
 
-    public synchronized Broker getBroker(String name) {
-        return brokers.get(name);
-    }
-
-    public synchronized Rdv accept(int port, Broker broker) {
-        Rdv rdv = rdvPoints.get(port);
-        if (rdv == null) {
-            rdv = new Rdv();
-            rdvPoints.put(port, rdv); 
+    public synchronized Broker getBrokerFromBM(String name) {
+        Broker broker = brokers.get(name);
+        if (broker == null) {
+            System.out.println("Broker with name " + name + " not found.");
         }
-        rdv.accept(broker); 
-        return rdv;
+        return broker;
     }
-
-    public synchronized Rdv connect(int port, Broker broker) {
-        Rdv rdv = rdvPoints.get(port);
-        if (rdv == null) {
-            rdv = new Rdv();
-            rdvPoints.put(port, rdv); 
-        }
-        rdv.connect(broker);  
-        return rdv;
-    }
-
-    // register a broker with the broker manager
+    
     public synchronized void registerBroker(Broker broker) {
-        brokers.put(broker.name, broker);
+        System.out.println("Registering broker: " + broker.getName());
+        brokers.put(broker.getName(), broker);
     }
 
-    // deregister a broker from the broker manager when no longer needed
+
+    // Deregisters a broker from the broker manager
     public synchronized void deregisterBroker(Broker broker) {
-        brokers.remove(broker.name, broker);
+
+        if (broker == null || broker.getName() == null || broker.getName().isEmpty()) {
+            throw new IllegalArgumentException("Broker or broker name cannot be null or empty.");
+        }
+        if (!brokers.containsKey(broker.getName())) {
+            throw new IllegalArgumentException("Broker with name " + broker.getName() + " does not exist.");
+        }
+        brokers.remove(broker.getName());
     }
 
-    // remove an Rdv when it is no longer needed (e.g., after disconnection)
-    public synchronized void removeRdv(int port) {
-        rdvPoints.remove(port);
+
+    public BrokerManager getManager(){
+        return this;
     }
 
    

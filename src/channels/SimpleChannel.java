@@ -1,51 +1,69 @@
 package channels;
 
-public class SimpleChannel extends Channel{
+public class SimpleChannel extends Channel {
 
-    public SimpleChannel(CircularBuffer buffer) {
-        this.inBuffer = new CircularBuffer(1024); 
-        this.outBuffer = new CircularBuffer(1024);
-        this.isDisconnected = false;  // Initially, the channel is connected
+    private Broker clientBroker;
+    private Broker serverBroker;
+    private CircularBuffer clientInBuffer;
+    private CircularBuffer serverInBuffer;
+    private CircularBuffer clientOutBuffer;
+    private CircularBuffer serverOutBuffer;
+    private boolean isDisconnected;
+
+    private static final int bufferSize = 1024;
+
+    public SimpleChannel(Broker clientBroker, Broker serverBroker) {
+        this.clientBroker = clientBroker;
+        this.serverBroker = serverBroker;
+        this.clientInBuffer = new CircularBuffer(bufferSize); // Client's inBuffer
+        this.serverInBuffer = new CircularBuffer(bufferSize); // Server's inBuffer
+        this.clientOutBuffer = serverInBuffer; // Client's outBuffer is Server's inBuffer
+        this.serverOutBuffer = clientInBuffer; // Server's outBuffer is Client's inBuffer
+        this.isDisconnected = false; // Channel is initially connected
     }
 
     @Override
     public synchronized int read(byte[] bytes, int offset, int length) {
-        if (isDisconnected) {
-            return -1;
+        CircularBuffer inBuffer = (clientBroker != null) ? clientInBuffer : serverInBuffer; // Determine if client or server buffer should be read
+        int bytesRead = 0;
+
+        try {
+            for (int i = 0; i < length; i++) {
+                if (inBuffer.empty()) break;
+                bytes[offset + i] = inBuffer.pull();
+                bytesRead++;
+            }
+        } catch (IllegalStateException e) {
+            System.out.println("Buffer is empty, cannot read.");
         }
 
-        // Read from the inBuffer and write to the bytes array
-        int bytesRead = 0 ; 
-        for (int i = offset; i < offset + length && !inBuffer.empty(); i++){  //and check if the inBuffer is empty
-            bytes[i] = inBuffer.pull(); 
-            bytesRead++;
-        }
         return bytesRead;
     }
 
     @Override
     public synchronized int write(byte[] bytes, int offset, int length) {
-        if (isDisconnected) {
-            return -1;
+        CircularBuffer outBuffer = (clientBroker != null) ? clientOutBuffer : serverOutBuffer; // Determine if client or server buffer should be written
+        int bytesWritten = 0;
+
+        try {
+            for (int i = 0; i < length; i++) {
+                outBuffer.push(bytes[offset + i]);
+                bytesWritten++;
+            }
+        } catch (IllegalStateException e) {
+            System.out.println("Buffer is full, cannot write.");
         }
 
-        // Write to the outBuffer from the bytes array
-        int bytesWritten = 0;
-        for (int i = offset; i < offset + length && !outBuffer.full(); i++){ //and check if the outBuffer is full
-            outBuffer.push(bytes[i]);
-            bytesWritten++;
-        }
         return bytesWritten;
     }
 
     @Override
     public void disconnect() {
-        isDisconnected = true; 
+        this.isDisconnected = true;
     }
 
     @Override
     public boolean disconnected() {
-       return isDisconnected;
+        return this.isDisconnected;
     }
-    
 }
