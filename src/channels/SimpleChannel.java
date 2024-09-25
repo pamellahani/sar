@@ -3,7 +3,7 @@ package channels;
 public class SimpleChannel extends Channel {
 
     private Broker clientBroker;
-    //private Broker serverBroker;
+    private Broker serverBroker;
     private CircularBuffer clientInBuffer;
     private CircularBuffer serverInBuffer;
     private CircularBuffer clientOutBuffer;
@@ -55,6 +55,25 @@ public class SimpleChannel extends Channel {
         }
 
         return bytesWritten;
+    }
+
+    public Channel connect (SimpleChannel ch, String brokerName){
+        if (clientBroker.getName().equals(brokerName)){
+            this.serverBroker = ch.clientBroker;
+            this.serverInBuffer = ch.clientInBuffer;
+            this.serverOutBuffer = ch.clientOutBuffer;
+            return this;
+        }
+        else if (serverBroker.getName().equals(brokerName)){
+            this.clientBroker = ch.serverBroker;
+            this.clientInBuffer = ch.serverInBuffer;
+            this.clientOutBuffer = ch.serverOutBuffer;
+            return this;
+        }
+        else{
+            throw new IllegalArgumentException("Broker with name " + brokerName + " not found.");
+        }
+
     }
 
     @Override

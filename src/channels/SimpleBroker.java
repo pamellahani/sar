@@ -3,11 +3,9 @@ package channels;
 import java.util.HashMap;
 
 public class SimpleBroker extends Broker {
-
     private BrokerManager manager;
-    private HashMap<Integer, Rdv> rdvPoints;
+    private HashMap<Integer, Rdv> rdvPoints; // HashMap to manage rendezvous points by port
 
-    // Constructor that accepts a shared BrokerManager
     public SimpleBroker(String name, BrokerManager manager) {
         super(name);
         if (manager == null) {
@@ -18,44 +16,36 @@ public class SimpleBroker extends Broker {
     }
 
     @Override
-    public Channel connect(String name, int port) {
-        Broker otherBroker = manager.getBrokerFromBM(name);
-
-        if (otherBroker == null) {
-            throw new IllegalArgumentException("Broker with name " + name + " not found.");
-        }
-        
-        // Check if the rendezvous point already exists for the specified port
-        Rdv rdvPoint;
+    public Channel accept(int port) {
         synchronized (rdvPoints) {
-            rdvPoint = rdvPoints.get(port);
-            
-            // If no existing Rdv for this port, create a new one
+            Rdv rdvPoint = rdvPoints.get(port);
             if (rdvPoint == null) {
                 rdvPoint = new Rdv();
-                rdvPoints.put(port, rdvPoint); // Register the Rdv in the map
+                rdvPoints.put(port, rdvPoint); // Create and register a new Rdv for this port if it does not exist
             }
-        }
 
-        // Use the Rdv to create a connection
-        return rdvPoint.connect(this, port);
+           
+            return rdvPoint.accept(this, port);
+           
+        }
     }
 
     @Override
-    public Channel accept(int port) {
-        // Create or retrieve the rendezvous point for this port
+    public Channel connect(String remoteBrokerName, int port) {
+        Broker otherBroker = manager.getBrokerFromBM(remoteBrokerName);
+        if (otherBroker == null) {
+            throw new IllegalArgumentException("Broker with name " + remoteBrokerName + " not found.");
+        }
+
         Rdv rdvPoint;
         synchronized (rdvPoints) {
             rdvPoint = rdvPoints.get(port);
-            
-            // If no existing Rdv for this port, create a new one
             if (rdvPoint == null) {
                 rdvPoint = new Rdv();
-                rdvPoints.put(port, rdvPoint); // Register the Rdv in the map
+                rdvPoints.put(port, rdvPoint); // Create and register a new Rdv for this port if it does not exist
             }
         }
 
-        // Use the Rdv to accept a connection
-        return rdvPoint.accept(this, port);
+        return rdvPoint.connect(this, port);
     }
 }
