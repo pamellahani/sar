@@ -13,6 +13,9 @@ public class RdvTest {
         SimpleBroker connectorBroker = new SimpleBroker("ConnectorBroker", manager);
         Rdv rdv = new Rdv();
 
+        manager.registerBroker(acceptorBroker);
+        manager.registerBroker(connectorBroker);
+
 
         //TODO: bug here -> infinite loop on connect method
         Thread acceptorThread = new Thread(() -> {

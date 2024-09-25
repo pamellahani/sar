@@ -23,6 +23,7 @@ public class Main {
                 if (bytesRead > 0) {
                     String receivedMessage = new String(buffer, 0, bytesRead);
                     System.out.println("Server received: " + receivedMessage);
+                    System.out.println("Server received bytes: " + bytesRead);
                 }
                 channel.disconnect();
             } catch (Exception e) {
@@ -38,8 +39,9 @@ public class Main {
                 System.out.println("Client connecting to server...");
                 Channel channel = clientBroker.connect("ServerBroker", 8080);
                 byte[] message = "Hello World".getBytes();
-                channel.write(message, 0, message.length);
+                int bytesSent = channel.write(message, 0, message.length);
                 System.out.println("Client sent: Hello World");
+                System.out.println("Client sent bytes: " + bytesSent);
                 channel.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
