@@ -14,7 +14,7 @@ public class SimpleChannel extends Channel {
 
     public SimpleChannel(Broker clientBroker, Broker serverBroker) {
         this.clientBroker = clientBroker;
-        this.serverBroker = serverBroker;
+        //this.serverBroker = serverBroker;
         this.clientInBuffer = new CircularBuffer(bufferSize); // Client's inBuffer
         this.serverInBuffer = new CircularBuffer(bufferSize); // Server's inBuffer
         this.clientOutBuffer = serverInBuffer; // Client's outBuffer is Server's inBuffer
@@ -55,6 +55,25 @@ public class SimpleChannel extends Channel {
         }
 
         return bytesWritten;
+    }
+
+    public Channel connect (SimpleChannel ch, String brokerName){
+        if (clientBroker.getName().equals(brokerName)){
+            this.serverBroker = ch.clientBroker;
+            this.serverInBuffer = ch.clientInBuffer;
+            this.serverOutBuffer = ch.clientOutBuffer;
+            return this;
+        }
+        else if (serverBroker.getName().equals(brokerName)){
+            this.clientBroker = ch.serverBroker;
+            this.clientInBuffer = ch.serverInBuffer;
+            this.clientOutBuffer = ch.serverOutBuffer;
+            return this;
+        }
+        else{
+            throw new IllegalArgumentException("Broker with name " + brokerName + " not found.");
+        }
+
     }
 
     @Override
