@@ -12,6 +12,8 @@ The broker’s main role is to make it easier for a transaction to occur. They c
 
 The broker concept is also applicable when integrating enterprise application systems that are made up of many heterogeneous software components that need to exchange information such as transactions and notification events. The broker in this case is used to implement or facilitate the round-the-clock messaging of data between the consumers and the producers.
 
+The implementation of this Message Queue system will be based on the previous Channel (with Circular Buffer) specification. 
+
 The Message Broker achieves this by using a Message Queue to provide a persistent mechanism. A queue of messages is placed between two parts of the system in order for them to communicate with each other. The message is the data transported between the sender and the receiver. For example, one part of the system tells another part to start processing a task.
 
 The architectural pattern of Message Brokers is often used in between microservices and/or for long-running tasks. The basic architecture is simple, producers create messages and deliver them to the Message Queue. Consumers connect to the Message Queue and subscribe to messages from the queue. Messages placed on the queue are stored until the consumer acknowledges them (i.e. consumer tells the message broker that the message has been received and handled).
