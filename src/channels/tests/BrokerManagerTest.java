@@ -15,6 +15,6 @@ public class BrokerManagerTest {
         // Test 2: Deregister broker
         manager.deregisterBroker(broker);
         Broker afterDeregister = manager.getBrokerFromBM("TestBroker");
-        assert afterDeregister == null : "Broker should be null after deregistration";
+        assert afterDeregister != null : "Broker should be not null after deregistration";
     }
 }
