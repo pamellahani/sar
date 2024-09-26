@@ -1,84 +1,57 @@
 package channels;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SimpleChannel extends Channel {
 
-    private Broker clientBroker;
-    private Broker serverBroker;
-    private CircularBuffer clientInBuffer;
-    private CircularBuffer serverInBuffer;
-    private CircularBuffer clientOutBuffer;
-    private CircularBuffer serverOutBuffer;
+    private Broker broker;  // The broker (either client or server) that owns this channel
     private boolean isDisconnected;
-
+    private final int port;
+    
     private static final int bufferSize = 1024;
 
-    public SimpleChannel(Broker clientBroker, Broker serverBroker) {
-        this.clientBroker = clientBroker;
-        //this.serverBroker = serverBroker;
-        this.clientInBuffer = new CircularBuffer(bufferSize); // Client's inBuffer
-        this.serverInBuffer = new CircularBuffer(bufferSize); // Server's inBuffer
-        this.clientOutBuffer = serverInBuffer; // Client's outBuffer is Server's inBuffer
-        this.serverOutBuffer = clientInBuffer; // Server's outBuffer is Client's inBuffer
-        this.isDisconnected = false; // Channel is initially connected
+    public SimpleChannel(int port, Broker broker) {
+        this.port = port;
+        this.broker = broker;
+        this.inBuffer = new CircularBuffer(bufferSize);
+        this.outBuffer = new CircularBuffer(bufferSize);
+        this.isDisconnected = false;
+    }
+
+    public void connectChannels(SimpleChannel other, String brokerName) {
+        // Example implementation could be added here based on application logic
+        System.out.println("Connecting to broker " + brokerName + " via port " + this.port);
     }
 
     @Override
-    public synchronized int read(byte[] bytes, int offset, int length) {
-        CircularBuffer inBuffer = (clientBroker != null) ? clientInBuffer : serverInBuffer; // Determine if client or server buffer should be read
+    public int read(byte[] bytes, int offset, int length) throws DisconnectedException {
+        if (isDisconnected) throw new DisconnectedException("Channel is disconnected");
         int bytesRead = 0;
-
-        try {
-            for (int i = 0; i < length; i++) {
-                if (inBuffer.empty()) break;
-                bytes[offset + i] = inBuffer.pull();
-                bytesRead++;
-            }
-        } catch (IllegalStateException e) {
-            System.out.println("Buffer is empty, cannot read.");
+        while (bytesRead < length && !inBuffer.empty()) {
+            bytes[offset + bytesRead++] = inBuffer.pull();
         }
-
         return bytesRead;
     }
 
     @Override
-    public synchronized int write(byte[] bytes, int offset, int length) {
-        CircularBuffer outBuffer = (clientBroker != null) ? clientOutBuffer : serverOutBuffer; // Determine if client or server buffer should be written
+    public int write(byte[] bytes, int offset, int length) throws DisconnectedException {
+        if (isDisconnected) throw new DisconnectedException("Channel is disconnected");
         int bytesWritten = 0;
-
-        try {
-            for (int i = 0; i < length; i++) {
-                outBuffer.push(bytes[offset + i]);
-                bytesWritten++;
-            }
-        } catch (IllegalStateException e) {
-            System.out.println("Buffer is full, cannot write.");
+        while (bytesWritten < length && !outBuffer.full()) {
+            outBuffer.push(bytes[offset + bytesWritten++]);
         }
-
         return bytesWritten;
-    }
-
-    public Channel connect (SimpleChannel ch, String brokerName){
-        if (clientBroker.getName().equals(brokerName)){
-            this.serverBroker = ch.clientBroker;
-            this.serverInBuffer = ch.clientInBuffer;
-            this.serverOutBuffer = ch.clientOutBuffer;
-            return this;
-        }
-        else if (serverBroker.getName().equals(brokerName)){
-            this.clientBroker = ch.serverBroker;
-            this.clientInBuffer = ch.serverInBuffer;
-            this.clientOutBuffer = ch.serverOutBuffer;
-            return this;
-        }
-        else{
-            throw new IllegalArgumentException("Broker with name " + brokerName + " not found.");
-        }
-
     }
 
     @Override
     public void disconnect() {
-        this.isDisconnected = true;
+        new Thread(() -> {
+            synchronized (this) {
+                isDisconnected = true; 
+            }
+            System.out.println("Channel on port " + port + " has been disconnected asynchronously.");
+        }).start();
     }
 
     @Override
