@@ -15,6 +15,8 @@ public class SimpleChannelTest {
 
         byte[] buffer = new byte[5];
         int bytesRead = channel.read(buffer, 0, buffer.length);
+        System.out.println("Received message: " + new String(buffer));
+        System.out.println("Number of bytes recieved :"+ bytesRead); 
         assert new String(buffer).equals("Hello") : "Received message should be 'Hello'";
         assert bytesRead == 5 : "Bytes read should be 5";
     }
