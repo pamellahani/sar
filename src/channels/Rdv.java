@@ -5,6 +5,16 @@ public class Rdv {
     private Broker brokerConnector;
     private SimpleChannel acceptingChannel;  // Single shared channel instance to simplify the interaction
     private SimpleChannel connectingChannel;  // Single shared channel instance to simplify the interaction
+    private boolean connected = false;
+
+    public Rdv(boolean isAcceptor, Broker broker, int port) {
+        if (isAcceptor) {
+            this.brokerAcceptor = broker;
+        } else {
+            this.brokerConnector = broker;
+        }
+        
+    }
 
     public synchronized Channel accept(Broker broker, int port) {
         this.brokerAcceptor = broker;
@@ -19,6 +29,14 @@ public class Rdv {
         }
 
         return acceptingChannel;
+    }
+
+    public synchronized boolean isConnected() {
+        return connected;
+    }
+
+    public synchronized void setConnected(boolean connected) {
+        this.connected = connected;
     }
 
     public synchronized Channel connect(Broker broker, int port) {

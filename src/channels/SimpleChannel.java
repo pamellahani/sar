@@ -17,7 +17,8 @@ public class SimpleChannel extends Channel {
     }
 
     public void connectChannels(SimpleChannel other, String brokerName) {
-        // Example implementation could be added here based on application logic
+        this.inBuffer = other.outBuffer;
+        this.outBuffer = other.inBuffer;
         System.out.println("Connecting to broker " + brokerName + " via port " + this.port);
     }
 
