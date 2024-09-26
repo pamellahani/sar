@@ -8,32 +8,33 @@ public class Rdv {
 
     public synchronized Channel accept(Broker broker, int port) {
         this.brokerAcceptor = broker;
-        this.acceptingChannel = new SimpleChannel(port,brokerAcceptor);  // Create the channel
-    
+        this.acceptingChannel = new SimpleChannel(port, brokerAcceptor);  // Create the channel
+
+        // If connectingChannel is already created, connect both channels immediately
         if (connectingChannel != null) {
-            connectingChannel.connectChannels(acceptingChannel, brokerAcceptor.getName());
+            connectChannels();
             notifyAll();  // Notify waiting connect call
         } else {
             waitForBroker(true);  // Wait for the connecting channel if not yet initialized
         }
-        
+
         return acceptingChannel;
     }
-    
+
     public synchronized Channel connect(Broker broker, int port) {
         this.brokerConnector = broker;
-        this.connectingChannel = new SimpleChannel(port,brokerConnector);  // Create the channel
-    
+        this.connectingChannel = new SimpleChannel(port, brokerConnector);  // Create the channel
+
+        // If acceptingChannel is already created, connect both channels immediately
         if (acceptingChannel != null) {
-            acceptingChannel.connectChannels(connectingChannel, brokerConnector.getName());
+            connectChannels();
             notifyAll();  // Notify waiting accept call
         } else {
             waitForBroker(false);  // Wait for the accepting channel if not yet initialized
         }
-    
+
         return connectingChannel;
     }
-    
 
     private synchronized void waitForBroker(boolean isAcceptor) {
         try {
@@ -50,5 +51,11 @@ public class Rdv {
             e.printStackTrace();
         }
     }
-    
+
+    // Method to connect channels when both channels are available
+    private synchronized void connectChannels() {
+        connectingChannel.connectChannels(acceptingChannel, brokerAcceptor.getName());
+        acceptingChannel.connectChannels(connectingChannel, brokerConnector.getName());
+        System.out.println("Channels successfully connected between client and server.");
+    }
 }
