@@ -5,7 +5,7 @@ public class Rdv {
     private Broker brokerConnector;
     private SimpleChannel acceptingChannel;  // Single shared channel instance to simplify the interaction
     private SimpleChannel connectingChannel;  // Single shared channel instance to simplify the interaction
-    private boolean connected = false;
+
 
     public Rdv(boolean isAcceptor, Broker broker, int port) {
         if (isAcceptor) {
@@ -13,7 +13,6 @@ public class Rdv {
         } else {
             this.brokerConnector = broker;
         }
-        
     }
 
     public synchronized Channel accept(Broker broker, int port) {
@@ -21,22 +20,14 @@ public class Rdv {
         this.acceptingChannel = new SimpleChannel(port, brokerAcceptor);  // Create the channel
 
         // If connectingChannel is already created, connect both channels immediately
-        if (connectingChannel != null) {
+        if (this.brokerConnector != null) {
             connectChannels();
             notifyAll();  // Notify waiting connect call
         } else {
-            waitForBroker(true);  // Wait for the connecting channel if not yet initialized
+            waitForBroker(this.brokerAcceptor,this.brokerConnector);  // Wait for the connecting channel if not yet initialized
         }
 
         return acceptingChannel;
-    }
-
-    public synchronized boolean isConnected() {
-        return connected;
-    }
-
-    public synchronized void setConnected(boolean connected) {
-        this.connected = connected;
     }
 
     public synchronized Channel connect(Broker broker, int port) {
@@ -44,29 +35,23 @@ public class Rdv {
         this.connectingChannel = new SimpleChannel(port, brokerConnector);  // Create the channel
 
         // If acceptingChannel is already created, connect both channels immediately
-        if (acceptingChannel != null) {
+        if (brokerAcceptor != null) {
             connectChannels();
             notifyAll();  // Notify waiting accept call
         } else {
-            waitForBroker(false);  // Wait for the accepting channel if not yet initialized
+            waitForBroker(this.brokerAcceptor,this.brokerConnector);  // Wait for the accepting channel if not yet initialized
         }
 
         return connectingChannel;
     }
 
-    private synchronized void waitForBroker(boolean isAcceptor) {
+    private synchronized void waitForBroker(Broker ab, Broker cb) {
         try {
-            if (isAcceptor) {
-                while (acceptingChannel == null) {
-                    wait();  // Wait for the accepting channel to be initialized
-                }
-            } else {
-                while (connectingChannel == null) {
-                    wait();  // Wait for the connecting channel to be initialized
-                }
+            if (ab == null || cb == null) {
+                wait();  // Wait for the other channel to be created
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt(); // Handle interruption
         }
     }
 
