@@ -13,6 +13,10 @@ public class BrokerManager {
         this.brokers = new ConcurrentHashMap<>();
     }
 
+    BrokerManager getSelf() {
+        return this;
+    }
+
 
     public synchronized Broker getBrokerFromBM(String name) {
         Broker broker = brokers.get(name);

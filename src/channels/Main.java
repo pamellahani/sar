@@ -8,9 +8,6 @@ public class Main {
         SimpleBroker serverBroker = new SimpleBroker("ServerBroker", brokerManager);
         SimpleBroker clientBroker = new SimpleBroker("ClientBroker", brokerManager);
         
-        brokerManager.registerBroker(serverBroker);
-        brokerManager.registerBroker(clientBroker);
-        
         // Server task: Accept connection and read message from the client
         Task serverTask = new SimpleTask(serverBroker, () -> {
             try {
@@ -43,8 +40,8 @@ public class Main {
                 Channel channel = clientBroker.connect("ServerBroker", 8080);
                 byte[] message = "Hello World".getBytes();
                 int bytesSent = channel.write(message, 0, message.length);
-                System.out.println("Client sent: Hello World");
                 System.out.println("Client sent bytes: " + bytesSent);
+                System.out.println("Client sent: " + new String(message, 0, message.length));
                 //Thread.sleep(500);  // Wait to ensure server has time to process data
                 channel.disconnect();
             } catch (Exception e) {
@@ -57,8 +54,8 @@ public class Main {
         clientTask.start();
 
         // Wait for both tasks to complete
-        serverTask.join();
-        clientTask.join();
+         clientTask.join();
+         serverTask.join();
 
         System.out.println("Communication finished.");
     }
