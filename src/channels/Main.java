@@ -22,6 +22,7 @@ public class Main {
                 byte[] buffer = new byte[1024];
                 //Thread.sleep(500);  // Wait for client to send data
                 int bytesRead = channel.read(buffer, 0, buffer.length);
+                System.out.println("Server received bytes: " + bytesRead);
                 if (bytesRead > 0) {
                     String receivedMessage = new String(buffer, 0, bytesRead);
                     System.out.println("Server received: " + receivedMessage);
