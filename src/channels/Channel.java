@@ -13,8 +13,8 @@ public abstract class Channel {
     protected CircularBuffer outBuffer;
     protected boolean isDisconnected;
 
-    public abstract int read(byte[] bytes, int offset, int length) ;
-    public abstract int write(byte[] bytes, int offset, int length) ;
+    public abstract int read(byte[] bytes, int offset, int length) throws DisconnectedException; ;
+    public abstract int write(byte[] bytes, int offset, int length) throws DisconnectedException ;
     public abstract void disconnect();
     public abstract boolean disconnected();
     
