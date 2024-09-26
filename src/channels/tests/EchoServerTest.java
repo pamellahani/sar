@@ -7,6 +7,7 @@ import channels.SimpleBroker;
 import channels.SimpleTask;
 import channels.Task;
 import channels.CircularBuffer;
+import channels.DisconnectedException;
 
 public class EchoServerTest {
     
@@ -36,7 +37,13 @@ public class EchoServerTest {
         this.serverTask = new SimpleTask(serverBroker, () -> {
             byte[] data = new byte[256];
             while  (!serverChannel.disconnected()) {
-                int bytesRead = serverChannel.read(data, 0, data.length);
+                int bytesRead = 0;
+                try {
+                    bytesRead = serverChannel.read(data, 0, data.length);
+                } catch (DisconnectedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 if (bytesRead > 0) {
 
                     //Push data into the buffer
@@ -51,7 +58,12 @@ public class EchoServerTest {
                     }
 
                     //Write the data back to the client
-                    serverChannel.write(data, 0, bytesRead);
+                    try {
+                        serverChannel.write(data, 0, bytesRead);
+                    } catch (DisconnectedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
             }
         });

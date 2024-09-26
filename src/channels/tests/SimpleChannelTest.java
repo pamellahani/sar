@@ -8,13 +8,25 @@ public class SimpleChannelTest {
         Broker clientBroker = new SimpleBroker("ClientBroker", new BrokerManager());
         Broker serverBroker = new SimpleBroker("ServerBroker", new BrokerManager());
 
-        SimpleChannel channel = new SimpleChannel(clientBroker, serverBroker);
+        SimpleChannel channel = new SimpleChannel(8080, clientBroker);
         byte[] message = "Hello".getBytes();
-        int bytesWritten = channel.write(message, 0, message.length);
+        int bytesWritten = 0;
+        try {
+            bytesWritten = channel.write(message, 0, message.length);
+        } catch (DisconnectedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         assert bytesWritten == message.length : "Bytes written should match the message length";
 
         byte[] buffer = new byte[5];
-        int bytesRead = channel.read(buffer, 0, buffer.length);
+        int bytesRead = 0;
+        try {
+            bytesRead = channel.read(buffer, 0, buffer.length);
+        } catch (DisconnectedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         System.out.println("Received message: " + new String(buffer));
         System.out.println("Number of bytes recieved :"+ bytesRead); 
         assert new String(buffer).equals("Hello") : "Received message should be 'Hello'";

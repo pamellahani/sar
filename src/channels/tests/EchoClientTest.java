@@ -5,6 +5,7 @@ import channels.Task;
 import channels.Broker;
 import channels.BrokerManager;
 import channels.Channel;
+import channels.DisconnectedException;
 import channels.SimpleBroker;
 import channels.SimpleTask;
 
@@ -28,11 +29,22 @@ public class EchoClientTest {
         this.clientTask = new SimpleTask(clientBroker, () -> {
             Channel clientChannel = clientBroker.connect("EchoServer", port);
             byte[] data = message.getBytes();
-            clientChannel.write(data, 0, data.length);
+            try {
+                clientChannel.write(data, 0, data.length);
+            } catch (DisconnectedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
             // Client waits for the response from the server and reads the returned data
             byte[] response = new byte[256];
-            int bytesRead = clientChannel.read(response, 0, response.length);
+            int bytesRead = 0;
+            try {
+                bytesRead = clientChannel.read(response, 0, response.length);
+            } catch (DisconnectedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             if (bytesRead > 0) {
                 echoedMessage = new String(response, 0, bytesRead);
             }
