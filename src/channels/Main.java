@@ -20,14 +20,14 @@ public class Main {
                     throw new IllegalStateException("Channel is null");
                 }
                 byte[] buffer = new byte[1024];
-                Thread.sleep(500);  // Wait for client to send data
+                //Thread.sleep(500);  // Wait for client to send data
                 int bytesRead = channel.read(buffer, 0, buffer.length);
                 if (bytesRead > 0) {
                     String receivedMessage = new String(buffer, 0, bytesRead);
                     System.out.println("Server received: " + receivedMessage);
                     System.out.println("Server received bytes: " + bytesRead);
                 }
-                Thread.sleep(500);  // Ensure all data is processed before disconnect
+                //Thread.sleep(500);  // Ensure all data is processed before disconnect
                 channel.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -37,14 +37,14 @@ public class Main {
         // Client task: Connect to the server and send a message
         Task clientTask = new SimpleTask(clientBroker, () -> {
             try {
-                Thread.sleep(1000);  // Ensure server is ready to accept connection
+                //Thread.sleep(1000);  // Ensure server is ready to accept connection
                 System.out.println("Client connecting to server...");
                 Channel channel = clientBroker.connect("ServerBroker", 8080);
                 byte[] message = "Hello World".getBytes();
                 int bytesSent = channel.write(message, 0, message.length);
                 System.out.println("Client sent: Hello World");
                 System.out.println("Client sent bytes: " + bytesSent);
-                Thread.sleep(500);  // Wait to ensure server has time to process data
+                //Thread.sleep(500);  // Wait to ensure server has time to process data
                 channel.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
