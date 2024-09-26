@@ -1,8 +1,5 @@
 package channels;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class SimpleChannel extends Channel {
 
     private Broker broker;  // The broker (either client or server) that owns this channel
