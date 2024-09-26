@@ -30,34 +30,48 @@ public class SimpleBroker extends Broker {
         }
         
         Channel ch; 
-        ch = rdvPoint.accept(this, port); // Proceed with accepting the connectionaccepts.remove(port);
+        synchronized (rdvPoint) {
+            ch = rdvPoint.accept(this, port); // Proceed with accepting the connection
+        }
+        
+        synchronized (accepts) {
+            accepts.remove(port); // Safely remove the Rdv from the list once the connection is made
+        }
+        
         return ch;
     }
 
     private Channel aux_connect(Broker bm, int port) {
         Rdv rdvPoint = null;
         synchronized (accepts) {
-            rdvPoint = accepts.get(port);
-            while (rdvPoint == null) {
+            while ((rdvPoint = accepts.get(port)) == null) {
                 try {
                     accepts.wait(); // Wait for the Rdv to be created
-                    //rdv = accepts.get(port);
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); // Handle interruption
+                    return null;
                 }
             }
-            accepts.remove(port); // Remove the Rdv from the list
-            notifyAll();
         }
-        Channel ch = rdvPoint.connect(bm, port);
+        
+        Channel ch;
+        synchronized (rdvPoint) {
+            ch = rdvPoint.connect(bm, port); // Proceed with connecting to the server
+        }
+
+        synchronized (accepts) {
+            accepts.remove(port); // Safely remove the Rdv from the list once the connection is made
+        }
+        
         return ch;
     }
 
     @Override
     public Channel connect(String brokerName, int port) {
-        Broker bm = manager.getBrokerFromBM(brokerName);
+        SimpleBroker bm = (SimpleBroker)manager.getBrokerFromBM(brokerName);
         if (bm == null) {
             throw new IllegalArgumentException("Broker with name " + brokerName + " not found.");
         }
-        return aux_connect(bm, port);
+        return bm.aux_connect(bm, port);
     }
 }
