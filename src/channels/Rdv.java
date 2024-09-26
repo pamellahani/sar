@@ -8,10 +8,10 @@ public class Rdv {
 
     public synchronized Channel accept(Broker broker, int port) {
         this.brokerAcceptor = broker;
-        this.acceptingChannel = new SimpleChannel(brokerAcceptor, brokerConnector);  // Create the channel
+        this.acceptingChannel = new SimpleChannel(port,brokerAcceptor);  // Create the channel
     
         if (connectingChannel != null) {
-            connectingChannel.connect(acceptingChannel, brokerAcceptor.getName());
+            connectingChannel.connectChannels(acceptingChannel, brokerAcceptor.getName());
             notifyAll();  // Notify waiting connect call
         } else {
             waitForBroker(true);  // Wait for the connecting channel if not yet initialized
@@ -22,10 +22,10 @@ public class Rdv {
     
     public synchronized Channel connect(Broker broker, int port) {
         this.brokerConnector = broker;
-        this.connectingChannel = new SimpleChannel(brokerAcceptor, brokerConnector);  // Create the channel
+        this.connectingChannel = new SimpleChannel(port,brokerConnector);  // Create the channel
     
         if (acceptingChannel != null) {
-            acceptingChannel.connect(connectingChannel, brokerConnector.getName());
+            acceptingChannel.connectChannels(connectingChannel, brokerConnector.getName());
             notifyAll();  // Notify waiting accept call
         } else {
             waitForBroker(false);  // Wait for the accepting channel if not yet initialized
