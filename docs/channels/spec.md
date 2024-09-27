@@ -1,14 +1,16 @@
-# Specification Documentation for Communication Layer Between Tasks
+# Specification  for Channel/Broker Communication Layer Between Tasks
 
-This document specifies the design and functionality of a communication layer between tasks for byte-based data transfer. This layer supports inter-process communication, which can occur on the same machine or across different machines.
+This document specifies the design and functionality of a distributed task communication system, designed to facilitate byte-oriented data transfer across diverse computing environments. The system supports inter-process communication both within the same machine and across distributed networks, making it an essential tool for modern software applications requiring robust and efficient network communication capabilities.
 
-This document specifies the design and functionality of a communication layer between tasks for byte-based data transfer. This layer supports inter-process communication, which can occur on the same machine or across different machines.
 
 The communication mechanism uses **byte-oriented circular buffers**, which provides a memory-conscious solution for task communication. Implemented in Java, this layer functions as a distributed system, facilitating seamless communication across various environments.
 
 ## 1. System Overview
 
-The communication layer facilitates the exchange of bytes between independent tasks via **channels**, which are managed by a **broker**. These channels can be used to establish a **bidirectional communication** flow between two tasks. This layer allows tasks to communicate without regard to whether they are on the same or different machines.
+The communication layer facilitates the exchange of bytes between independent tasks via **channels**, which are managed by a **broker**. **Rdv points** (rdv = rendez-vous) are established between tasks to enable data transmission with minimal overhead and without data loss. 
+These channels can be used to establish a **bidirectional communication** flow between two tasks. 
+
+In this distributed task communication system, a task initiates communication by requesting a channel through a broker, specifying connection details. The broker checks for a corresponding partner through a Broker Manager and establishes a rendezvous point once matching partners are found. A channel is then created, enabling the tasks to begin transmitting data using circular buffers that ensure FIFO and lossless communication. Data transmission is managed through read and write operations that handle blocking conditions effectively. Finally, either party can initiate disconnection, triggering a cleanup process that ensures the channel is closed properly without data loss or resource leakage.
 
 ## 2. Functional Requirements
 
@@ -105,6 +107,42 @@ The circular buffer provides the following key methods:
 
 **`byte pull()`**: Retrieves and removes the next available byte. Returns the byte pulled from the buffer. Throws an `IllegalStateException` if the buffer is empty.
 
+### 3.5. Broker Manager
+The Broker Manager acts as the central registry for all brokers, managing their lifecycle and interactions.
+
+It handles the registration and deregistration of brokers, maintaining a directory of active brokers.
+The Broker Manager is also responsible for establishing connections between different brokers, supporting distributed operations across multiple machines.
+
+#### Broker Manager Key Methods:
+
+The Broker Manager provides the following key methods:
+
+**`void register(Broker broker)`**: Registers a new broker with the manager, allowing it to participate in the communication network.
+
+**`void deregister(Broker broker)`**: Deregisters a broker from the manager, removing it from the active broker list.
+
+**`Broker findBroker(String name)`**: Retrieves a broker by its unique name, allowing tasks to connect to specific brokers.
+
+### 3.6. Rdv 
+
+Rdvs manage the synchronization points where channel connections are established, ensuring that connections are properly synchronized.
+
+They manage the meeting points for channel connections, coordinating the accept and connect operations to prevent deadlocks and ensure timely connections.
+
+A rdv point is put into place to support blocking operations where a task waits for a corresponding task to join the communication, enhancing the reliability of the connection setup.
+
+#### Rdv Key Methods:
+
+The Rdv provides the following key methods:
+
+**`Channel connect (Broker cb, int port)`**: Initiates a connection request to the specified broker and port, establishing a rendezvous point for the channel connection.
+
+**`Channel accept (int port)`**: Accepts an incoming connection request on the specified port, establishing a rendezvous point for the channel connection.
+
+these methods are mutually exclusive, meaning that only one of them can be called at a time.
+
+
+
 ## 4. Multi-threading Considerations
 
 **Broker Class**: The Broker is designed to handle multiple tasks concurrently, meaning it is thread-safe.
@@ -131,4 +169,8 @@ Due to design choices, certain concerns and limitations should be considered whe
 
 ## 7. Conclusion
 
+By providing a structured and high-level abstraction over the underlying network and threading complexities, this communication system significantly simplifies the development of networked applications. 
 
+It allows developers to focus more on the strategic aspects of application functionality rather than the intricacies of network management. This shift not only accelerates the development cycle but also enhances the reliability and scalability of applications operating in distributed computing environments.
+
+Furthermore, we will use this Channel communication system to  implement **Message Queues**, which will allow tasks to communicate asynchronously and decouple the sender and receiver, enabling more flexible and robust communication patterns.
