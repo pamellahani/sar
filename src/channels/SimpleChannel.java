@@ -2,7 +2,6 @@ package channels;
 
 public class SimpleChannel extends Channel {
 
-    private Broker broker;  // The broker (either client or server) that owns this channel
     private boolean isDisconnected;
     private final int port;
     
@@ -10,7 +9,6 @@ public class SimpleChannel extends Channel {
 
     public SimpleChannel(int port, Broker broker) {
         this.port = port;
-        this.broker = broker;
         this.inBuffer = new CircularBuffer(bufferSize);
         this.outBuffer = new CircularBuffer(bufferSize);
         this.isDisconnected = false;
