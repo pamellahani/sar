@@ -1,17 +1,20 @@
 package channels.tests;
 
 import channels.Broker;
+import channels.BrokerManager;
 import channels.Channel;
 import channels.SimpleBroker;
 import channels.SimpleTask;
 import channels.Task;
 import channels.CircularBuffer;
+import channels.DisconnectedException;
 
 public class EchoServerTest {
     
     private Broker serverBroker;
     private Task serverTask;
     private CircularBuffer buffer;
+    private BrokerManager brokerManager;
 
     /**
      * 
@@ -23,16 +26,24 @@ public class EchoServerTest {
     public EchoServerTest(int port) {
 
         this.buffer = new CircularBuffer(256);
-
+        this.brokerManager = new BrokerManager();
+        
         // Create a new server broker and accept a connection on the specified port
-        this.serverBroker = new SimpleBroker("EchoServer");
+        this.serverBroker = new SimpleBroker("EchoServer", brokerManager);
+        brokerManager.registerBroker(serverBroker);
         Channel serverChannel = this.serverBroker.accept(port);
 
         // Define the server task 
         this.serverTask = new SimpleTask(serverBroker, () -> {
             byte[] data = new byte[256];
             while  (!serverChannel.disconnected()) {
-                int bytesRead = serverChannel.read(data, 0, data.length);
+                int bytesRead = 0;
+                try {
+                    bytesRead = serverChannel.read(data, 0, data.length);
+                } catch (DisconnectedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 if (bytesRead > 0) {
 
                     //Push data into the buffer
@@ -47,7 +58,12 @@ public class EchoServerTest {
                     }
 
                     //Write the data back to the client
-                    serverChannel.write(data, 0, bytesRead);
+                    try {
+                        serverChannel.write(data, 0, bytesRead);
+                    } catch (DisconnectedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
             }
         });
