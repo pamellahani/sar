@@ -11,10 +11,10 @@ public class RdvTest {
         BrokerManager manager = new BrokerManager();
         SimpleBroker acceptorBroker = new SimpleBroker("AcceptorBroker", manager);
         SimpleBroker connectorBroker = new SimpleBroker("ConnectorBroker", manager);
-        Rdv rdv = new Rdv();
+        Rdv rdv = new Rdv(true, acceptorBroker, 8080);
 
-        manager.registerBroker(acceptorBroker);
-        manager.registerBroker(connectorBroker);
+        // manager.registerBroker(acceptorBroker);
+        // manager.registerBroker(connectorBroker);
 
 
         //TODO: bug here -> infinite loop on connect method
@@ -29,7 +29,7 @@ public class RdvTest {
         });
 
         acceptorThread.start();
-        Thread.sleep(100);  // Ensure the acceptor is ready before the connector starts
+        //Thread.sleep(100);  // Ensure the acceptor is ready before the connector starts
         connectorThread.start();
 
         acceptorThread.join();
