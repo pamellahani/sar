@@ -8,7 +8,7 @@ In computing, tasks often need to communicate with each other asynchronously. A 
 
 ## System Overview
 
-The broker’s main role is to make it easier for a transaction to occur. They can represent the buyer or the seller, but not both at the same time. For instance, a mortgage broker helps match borrowers to financial institutions offering the most affordable loans based on the borrower’s financial situation and interest-rate needs.
+The broker’s main role is to make it easier for a transaction to occur. They can represent the buyer or the seller, but not both at the same t  ime. For instance, a mortgage broker helps match borrowers to financial institutions offering the most affordable loans based on the borrower’s financial situation and interest-rate needs.
 
 The broker concept is also applicable when integrating enterprise application systems that are made up of many heterogeneous software components that need to exchange information such as transactions and notification events. The broker in this case is used to implement or facilitate the round-the-clock messaging of data between the consumers and the producers.
 
