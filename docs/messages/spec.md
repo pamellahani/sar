@@ -85,6 +85,12 @@ The Message broker will ensure that producers and consumers remain decoupled, me
 3. A **consumer** task connects to the same broker, retrieves the message from the queue using `channel.read()`, processes it, and sends a reply back via the response queue.
 4. The **producer** retrieves the reply from the response queue using `channel.read()`.
 
+## Callback pattern
+
+Occasionally a scenario exists where a message sender has to wait for a response before doing anything else. We can therefore confirm that the message sender invokes to a blocking call. 
+
+wThis often occurs in existing systems where messaging is introduced but the user interface is designed to wait for a response. Instead of an immediate and partial rewrite of the user interface, the callback pattern can be used to wait for a response.
+
 ## Conclusion
 
 By extending the existing **channel-based communication layer**, we can create a robust and scalable **Message Queue** system. The use of circular buffers for queuing messages, combined with the broker's ability to manage distributed and thread-safe communication, allows for efficient asynchronous messaging. This new system will support message queuing, request-reply patterns, and fault-tolerant communication in distributed environments.
