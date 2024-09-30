@@ -1,4 +1,4 @@
-### Updated Message Queue System Design Documentation
+## Message Queue System Design Documentation
 
 #### **Overview**
 The Message Queue System facilitates communication between a client and a server (both represented by `Task` objects) through message brokers and channels. Messages are sent and received as byte arrays. The system includes asynchronous and blocking communication patterns and ensures thread safety through the use of request and response queues that extend `MessageQueue`.
@@ -42,41 +42,39 @@ The Message Queue System facilitates communication between a client and a server
 
 #### **Communication Flow and Object Interaction**
 
-1. **Client and Server (Tasks)**
-   - The client and server are represented by `Task` objects. Each task is linked to a `MessageBroker`, which handles the communication for that task. Both brokers are managed by the `MessageBrokerManager`.
-   - **Client Task**:
-     - The client task connects to its `Channel` via the `MessageBroker` and sends requests using the **RequestQueue**. It sends byte arrays asynchronously with the `send()` method of `MessageQueue`.
-     - After sending the request, the client waits for a response using the blocking `receive()` method on the **ResponseQueue**.
-   - **Server Task**:
-     - The server task connects to the same `Channel` but listens on the **RequestQueue**. It receives client messages using the blocking `receive()` method.
-     - After processing the message, the server sends a response through the **ResponseQueue**, which the client will retrieve.
+1. **Initialization of Tasks**:
+
+     Each `Task` instance extends a thread and contains one or multiple `Runnable` objects.
 
 2. **MessageBrokerManager**
-   - The `MessageBrokerManager` manages and stores the brokers for both client and server. It ensures that the communication between tasks is properly initialized and managed by storing both brokers in the `QueueBroker`.
+    
+    The `MessageBrokerManager` manages and stores the brokers for both client and server. It ensures that the communication between tasks is properly initialized and managed by storing both brokers in the `QueueBroker`.
 
-3. **QueueBroker**
-   - The `QueueBroker` encapsulates the client and server's `MessageBroker` instances. It manages the lifecycle and connection setup between the client and server via the `accept()` and `connect()` methods.
-   - Both methods are **blocking**, ensuring that the connection between the client and server is fully established before any message exchanges occur.
+1. **QueueBroker**
+    
+    The `QueueBroker` encapsulates the client and server's `MessageBroker` instances. It manages the lifecycle and connection setup between the client and server via the `accept()` and `connect()` methods. Both methods are **blocking**, ensuring that the connection between the client and server is fully established before any message exchanges occur.
 
-4. **Channel**
-   - A `Channel` represents the communication link between the client and server.
+1. **Channel**
+    
+    A `Channel` represents the communication link between the client and server. Each channel contains 2 queues:
    - **RequestQueue**: The client sends its requests through the request queue.
    - **ResponseQueue**: The server sends its responses through the response queue.
-   - These queues extend `MessageQueue`, enabling asynchronous sending (via `send()`) and blocking reception (via `receive()`).
+  
+    These queues extend `MessageQueue`, enabling asynchronous sending (via `send()`) and blocking reception (via `receive()`).
 
 
 
-#### **Interaction Sequence**
+#### **Recap of Interaction Sequence**
 
-Both client and server tasks are initialized with their respective `MessageBroker`, which is stored in the `MessageBrokerManager` for tracking and management. The client uses the `connect(String name, int port)` method of `QueueBroker` to initiate a connection to the server. This method is blocking, waiting for the server to accept the connection. The server listens using the `accept(int port)` method, which is also blocking, and establishes a connection when the client’s request arrives.
+Both client and server `Task` instances are initialized with their respective `MessageBroker`, which is stored in the `MessageBrokerManager` for tracking and management. The client uses the `connect(String name, int port)` method of `QueueBroker` to initiate a connection to the server. This method is blocking, waiting for the server to accept the connection. The server listens using the `accept(int port)` method, which is also blocking, and establishes a connection when the client’s request arrives.
 The client sends a message through the **RequestQueue** using the `send()` method, and the server retrieves the message using the `receive()` method. After processing the message, the server sends a response through the **ResponseQueue**, which the client retrieves using the `receive()` method.
 For further details, the interaction sequence is as follows:
-   - **Request Phase**:
-     - The client sends a byte array through the **RequestQueue** using the `send()` method.
-     - The server retrieves the message from the **RequestQueue** using the blocking `receive()` method.
-   - **Response Phase**:
-     - After processing the client’s message, the server sends a response through the **ResponseQueue**.
-     - The client retrieves the server’s response by invoking the `receive()` method on the **ResponseQueue**.
+   - Request Phase:
+     - The client sends a byte array through the RequestQueue using the `send()` method.
+     - The server retrieves the message from the RequestQueue using the blocking `receive()` method.
+   - Response Phase:
+     - After processing the client’s message, the server sends a response through the ResponseQueue.
+     - The client retrieves the server’s response by invoking the `receive()` method on the ResponseQueue.
 
 Once communication is complete, both the client and server can close their message queues using the `close()` method.
 
