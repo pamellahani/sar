@@ -1,10 +1,16 @@
 package channels;
 
+import messages.RequestQueue;
+import messages.ResponseQueue;
+
 public class SimpleChannel extends Channel {
+
+    private RequestQueue requestQueue;
+    private ResponseQueue responseQueue;
 
     private boolean isDisconnected;
     private final int port;
-    
+
     private static final int bufferSize = 1024;
 
     public SimpleChannel(int port, Broker broker) {
@@ -12,12 +18,24 @@ public class SimpleChannel extends Channel {
         this.inBuffer = new CircularBuffer(bufferSize);
         this.outBuffer = new CircularBuffer(bufferSize);
         this.isDisconnected = false;
+
+        // Initialize the request and response queues
+        this.requestQueue = new RequestQueue(this);
+        this.responseQueue = new ResponseQueue(this);
     }
 
     public void connectChannels(SimpleChannel other, String brokerName) {
         this.inBuffer = other.outBuffer;
         this.outBuffer = other.inBuffer;
         System.out.println("Connecting to broker " + brokerName + " via port " + this.port);
+    }
+
+    public RequestQueue getRequestQueue() {
+        return this.requestQueue;
+    }
+
+    public ResponseQueue getResponseQueue() {
+        return this.responseQueue;
     }
 
     @Override
