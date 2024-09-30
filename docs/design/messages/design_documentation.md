@@ -29,8 +29,8 @@ The Message Queue System facilitates communication between a client and a server
      - `Broker getBroker()`: Retrieves the broker managing the task.
      - `QueueBroker getQueueBroker()`: Retrieves the queue broker associated with the task.
 
-4. **MessageBrokerManager**
-   - Manages the lifecycle and retrieval of `MessageBroker` instances for both the client and server tasks.
+4. **QueueBrokerManager**
+   - Manages the lifecycle and retrieval of `QueueBroker` instances for both the client and server tasks.
    - Responsible for tracking both brokers and making sure that they are properly connected to each other.
    
 5. **Channel**
@@ -46,13 +46,14 @@ The Message Queue System facilitates communication between a client and a server
 
      Each `Task` instance extends a thread and contains one or multiple `Runnable` objects.
 
-2. **MessageBrokerManager**
+2. **QueueBroker
+Manager**
     
-    The `MessageBrokerManager` manages and stores the brokers for both client and server. It ensures that the communication between tasks is properly initialized and managed by storing both brokers in the `QueueBroker`.
+    The `QueueBrokerManager` manages and stores the brokers for both client and server. It ensures that the communication between tasks is properly initialized and managed by storing both brokers in the `QueueBroker`.
 
 1. **QueueBroker**
     
-    The `QueueBroker` encapsulates the client and server's `MessageBroker` instances. It manages the lifecycle and connection setup between the client and server via the `accept()` and `connect()` methods. Both methods are **blocking**, ensuring that the connection between the client and server is fully established before any message exchanges occur.
+    The `QueueBroker` encapsulates the client and server's `QueueBroker` instances. It manages the lifecycle and connection setup between the client and server via the `accept()` and `connect()` methods. Both methods are **blocking**, ensuring that the connection between the client and server is fully established before any message exchanges occur.
 
 1. **Channel**
     
@@ -66,7 +67,7 @@ The Message Queue System facilitates communication between a client and a server
 
 #### **Recap of Interaction Sequence**
 
-Both client and server `Task` instances are initialized with their respective `MessageBroker`, which is stored in the `MessageBrokerManager` for tracking and management. The client uses the `connect(String name, int port)` method of `QueueBroker` to initiate a connection to the server. This method is blocking, waiting for the server to accept the connection. The server listens using the `accept(int port)` method, which is also blocking, and establishes a connection when the client’s request arrives.
+Both client and server `Task` instances are initialized with their respective `QueueBroker`, which is stored in the `QueueBrokerManager` for tracking and management. The client uses the `connect(String name, int port)` method of `QueueBroker` to initiate a connection to the server. This method is blocking, waiting for the server to accept the connection. The server listens using the `accept(int port)` method, which is also blocking, and establishes a connection when the client’s request arrives.
 The client sends a message through the **RequestQueue** using the `send()` method, and the server retrieves the message using the `receive()` method. After processing the message, the server sends a response through the **ResponseQueue**, which the client retrieves using the `receive()` method.
 For further details, the interaction sequence is as follows:
    - Request Phase:
@@ -86,4 +87,4 @@ Once communication is complete, both the client and server can close their messa
 - The blocking nature of the `receive()` method ensures thread safety during message retrieval. Multiple threads accessing the same queue will not cause race conditions because the method only returns when a complete message is ready.
 - The non-blocking `send()` method allows the sender to proceed immediately, providing better performance when handling multiple clients.
 
-This system ensures a smooth and efficient message-passing mechanism between the client and server using `Task`, `MessageBroker`, `QueueBroker`, `MessageQueue`, and `Channel` instances.
+This system ensures a smooth and efficient message-passing mechanism between the client and server using `Task`, `QueueBroker`, `QueueBroker`, `MessageQueue`, and `Channel` instances.
