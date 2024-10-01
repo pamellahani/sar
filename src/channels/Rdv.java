@@ -30,7 +30,7 @@ public class Rdv {
         return acceptingChannel;
     }
 
-    public synchronized Channel connect(Broker broker, int port) {
+    public Channel connect(Broker broker, int port) {
         this.brokerConnector = broker;
         this.connectingChannel = new SimpleChannel(port, brokerConnector);  // Create the channel
 

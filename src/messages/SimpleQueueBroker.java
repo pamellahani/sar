@@ -1,26 +1,25 @@
 package messages;
 
-import channels.*;
+import channels.Broker;
+import channels.Channel;
 
 public class SimpleQueueBroker extends QueueBroker {
 
-    
 
     public SimpleQueueBroker(Broker broker) {
         super(broker);
-    }
-
     
+    }
 
     @Override
     public MessageQueue accept(int port) {
-        SimpleChannel channel = (SimpleChannel) broker.accept(port);
-        return channel.getRequestQueue();  // Returns the RequestQueue for communication
+        Channel channel = broker.accept(port);
+        return new MessageQueue(channel);
     }
 
     @Override
     public MessageQueue connect(String name, int port) {
-        SimpleChannel channel = (SimpleChannel) broker.connect(name, port);
-        return channel.getResponseQueue();  // Returns the ResponseQueue for communication
+        Channel channel = broker.connect(name, port);
+        return new MessageQueue(channel);
     }
 }
