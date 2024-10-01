@@ -1,90 +1,60 @@
-## Message Queue System Design Documentation
+## **Message Queue System Design Documentation**
 
-#### **Overview**
-The Message Queue System facilitates communication between a client and a server (both represented by `Task` objects) through message brokers and channels. Messages are sent and received as byte arrays. The system includes asynchronous and blocking communication patterns and ensures thread safety through the use of request and response queues that extend `MessageQueue`.
+### **Overview**
+The Message Queue System enables efficient and thread-safe communication between tasks (clients and servers) by utilizing a centralized `BrokerManager` that manages `QueueBroker` instances. These brokers facilitate message transfer through `Channels` equipped with circular buffers.
 
-#### **Key Classes and Components**
+### **Key Classes and Components**
 
-1. **QueueBroker**
-   - Abstract class responsible for managing connections and communication channels between tasks (client and server).
+1. **Task (Requestor and Receiver)**
+   : Represents active entities (clients and servers) that perform communications.
+    
+    **Methods**:
+      
+     - `Broker getBroker()`: Retrieves the broker associated with the task for initiating connections.
+
+2. **BrokerManager**: Central management of `QueueBroker` instances, ensuring each task can retrieve its specific broker.
+  
+    **Methods**:
+    - `QueueBroker getBroker(String identifier)`: Retrieves the appropriate `QueueBroker` for a given task identifier, managing all broker instances.
+
+3. **QueueBroker**
+   - Facilitates connections between tasks and handles message queuing. This object internally uses a `Broker` to manage details specific to each connection.
+  
+     **Methods**:
+     - `Broker getBroker()`: Retrieves the internal `Broker` that handles the connection specifics for the task.
+
+4. **Channel**
+   - Acts as the communication pathway between tasks, handling message passing through dedicated message queues.
+   - Each channel incorporates circular buffers for read and write operations to ensure data integrity and thread safety.
+
+    Methods implemented in task1
+
+5. **MessageQueue**
+   - A component within `Channel` that manages message traffic using circular buffers.
    - **Methods**:
-     - `String name()`: Returns the name of the broker.
-     - `MessageQueue accept(int port)`: Blocks until a connection is established for incoming messages on a specified port.
-     - `MessageQueue connect(String name, int port)`: Blocks until a connection is made to a remote queue on the specified port.
-
-2. **MessageQueue (RequestQueue and ResponseQueue)**
-   - Manages the sending and receiving of messages.
-   - **RequestQueue**: Handles the client’s request data.
-   - **ResponseQueue**: Handles the server’s response data.
-   - **Methods**:
-     - `void send(byte[] bytes, int offset, int length)`: Asynchronously sends bytes starting from a specific offset and length.
-     - `byte[] receive()`: A blocking method that waits until a complete message is received.
-     - `void close()`: Closes the queue for sending or receiving messages.
-     - `boolean closed()`: Checks if the queue is closed.
-
-3. **Task (Client and Server)**
-   - Represents the active entities (client and server) participating in communication.
-   - **Methods**:
-     - `Task(Broker b, Runnable r)` and `Task(QueueBroker b, Runnable r)`: Constructors that associate a task with a broker or queue broker.
-     - `Broker getBroker()`: Retrieves the broker managing the task.
-     - `QueueBroker getQueueBroker()`: Retrieves the queue broker associated with the task.
-
-4. **QueueBrokerManager**
-   - Manages the lifecycle and retrieval of `QueueBroker` instances for both the client and server tasks.
-   - Responsible for tracking both brokers and making sure that they are properly connected to each other.
-   
-5. **Channel**
-   - Represents the communication pathway between client and server tasks.
-   - Each channel contains:
-     - **RequestQueue**: Where the client’s requests (messages) are placed.
-     - **ResponseQueue**: Where the server’s responses are placed.
-   - Facilitates communication by connecting both the client and server to their respective queues.
+     - `void write(byte[] data)`: Writes data into the circular buffer.
+     - `byte[] read()`: Reads data from the circular buffer, ensuring FIFO delivery of messages.
 
 #### **Communication Flow and Object Interaction**
 
 1. **Initialization of Tasks**:
+   - Tasks are instantiated with their respective `Runnable` clusters and retrieve their brokers using the `getBroker()` method provided by `QueueBroker`.
 
-     Each `Task` instance extends a thread and contains one or multiple `Runnable` objects.
+2. **Broker and QueueBroker Management**:
+   - `BrokerManager` assigns and manages `QueueBroker` instances for tasks, which in turn utilize `Broker` for connection specifics.
 
-2. **QueueBroker
-Manager**
-    
-    The `QueueBrokerManager` manages and stores the brokers for both client and server. It ensures that the communication between tasks is properly initialized and managed by storing both brokers in the `QueueBroker`.
+3. **Channel and MessageQueue Operation**:
+   - Communication between tasks is facilitated through channels where `write()` and `read()` operations on circular buffers manage the flow of messages.
 
-1. **QueueBroker**
-    
-    The `QueueBroker` encapsulates the client and server's `QueueBroker` instances. It manages the lifecycle and connection setup between the client and server via the `accept()` and `connect()` methods. Both methods are **blocking**, ensuring that the connection between the client and server is fully established before any message exchanges occur.
+### **Sequence of Interactions**
 
-1. **Channel**
-    
-    A `Channel` represents the communication link between the client and server. Each channel contains 2 queues:
-   - **RequestQueue**: The client sends its requests through the request queue.
-   - **ResponseQueue**: The server sends its responses through the response queue.
-  
-    These queues extend `MessageQueue`, enabling asynchronous sending (via `send()`) and blocking reception (via `receive()`).
+    FYI: In the Message Queue System, the sequence of interactions follows a structured pattern reminiscent of Java Messaging Queue mechanisms, ensuring reliable and thread-safe communication between tasks. 
 
+Initially, each `Task`, whether it serves as a requester or a receiver, retrieves its associated broker by invoking the getBroker() method on its QueueBroker instance. This method call facilitates interaction with the internal Broker that manages specific connection details and channel assignments.
 
+Following broker retrieval, the message transmission process begins. Requestor tasks, which initiate communication, write their messages into designated channels using the write() method. These channels, equipped with circular buffers, ensure that messages are queued in a first-in-first-out (FIFO) manner, preserving the order of messages as they are sent. On the other side, receiver tasks pull these messages from the channel by invoking the read() method on the circular buffers, retrieving the data exactly as it was sent.
 
-#### **Recap of Interaction Sequence**
+The response handling phase mirrors the initial message sending process but with roles reversed. Receiver tasks become senders when they need to respond to messages received. They write their responses back into the channel using the same write() method, and the original requestor tasks read the responses using the read() method. This bidirectional communication ensures that both parties can continuously exchange messages and acknowledgments, maintaining a synchronous or asynchronous dialogue as required by their operational context.
 
-Both client and server `Task` instances are initialized with their respective `QueueBroker`, which is stored in the `QueueBrokerManager` for tracking and management. The client uses the `connect(String name, int port)` method of `QueueBroker` to initiate a connection to the server. This method is blocking, waiting for the server to accept the connection. The server listens using the `accept(int port)` method, which is also blocking, and establishes a connection when the client’s request arrives.
-The client sends a message through the **RequestQueue** using the `send()` method, and the server retrieves the message using the `receive()` method. After processing the message, the server sends a response through the **ResponseQueue**, which the client retrieves using the `receive()` method.
-For further details, the interaction sequence is as follows:
-   - Request Phase:
-     - The client sends a byte array through the RequestQueue using the `send()` method.
-     - The server retrieves the message from the RequestQueue using the blocking `receive()` method.
-   - Response Phase:
-     - After processing the client’s message, the server sends a response through the ResponseQueue.
-     - The client retrieves the server’s response by invoking the `receive()` method on the ResponseQueue.
-
-Once communication is complete, both the client and server can close their message queues using the `close()` method.
-
-#### **Key Communication Patterns**
-- The `send()` method in the message queue is asynchronous, allowing the client to continue its operations without waiting for an acknowledgment from the server.
-- The `receive()` method is blocking, ensuring that the task waits until a complete message is available before proceeding.
-
-#### **Thread-Safety Considerations**
-- The blocking nature of the `receive()` method ensures thread safety during message retrieval. Multiple threads accessing the same queue will not cause race conditions because the method only returns when a complete message is ready.
-- The non-blocking `send()` method allows the sender to proceed immediately, providing better performance when handling multiple clients.
-
-This system ensures a smooth and efficient message-passing mechanism between the client and server using `Task`, `QueueBroker`, `QueueBroker`, `MessageQueue`, and `Channel` instances.
+### **Thread Safety and Performance Considerations**
+- Circular buffers within channels ensure thread safety, preventing data corruption and race conditions.Also, the management of blocking and non-blocking buffer operations optimizes performance, especially in high-concurrency environments.
