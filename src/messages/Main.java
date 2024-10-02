@@ -15,11 +15,13 @@ public class Main {
         SimpleQueueBroker serverQueueBroker = new SimpleQueueBroker(serverBroker);
         SimpleQueueBroker clientQueueBroker = new SimpleQueueBroker(clientBroker);
 
+
         // Server task setup
         MessageQueue serverQueue = serverQueueBroker.accept(5000);
+        System.out.println("Server queue created.");
         MessageQueue clientQueue = clientQueueBroker.connect("ServerBroker", 5000);
 
-        
+
         Task server = new SimpleTask(serverBroker, () -> {
             try {
                 System.out.println("Server is waiting for messages...");
@@ -31,7 +33,6 @@ public class Main {
         });
 
         // Client task setup
-
         Task client = new SimpleTask(clientBroker, () -> {
             try {
                 String message = "Hello from client!";
