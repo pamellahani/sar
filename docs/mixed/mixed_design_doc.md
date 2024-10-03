@@ -54,10 +54,8 @@ The key feature of this system is the interaction between **event-based tasks** 
 
 #### **Ownership Transfer and Aliasing in the Send Method:**
 
-In this system, **ownership transfer** is achieved through **aliasing**, particularly during the `send()` method's invocation. The underlying design allows the `send()` method to:
-- Pass the reference of the byte array to the receiving end, ensuring no deep copies are made.
-- Efficiently move messages between tasks using **MessageQueue** while maintaining high performance.
-- Ensure data consistency and synchronization through the use of circular buffers, where the data pointer is shared and updated between the sender and receiver tasks.
+### **4. Ownership Transfer and Aliasing:**
+When the **send()** method is invoked, **ownership transfer** happens through **aliasing**. This allows the system to pass a reference to the message (byte array) instead of creating a deep copy, ensuring efficient memory usage. Once the **Event Pump** handles the event, the message is moved between the **Requestor** and **Receiver** tasks through the **Channel** and **Circular Buffer**.
 
 ---
 
@@ -83,3 +81,8 @@ In this system, **ownership transfer** is achieved through **aliasing**, particu
   1. **bind()**: The server binds to a port and waits for connections.
   2. **Message Reception**: Once a connection is accepted, the server listens for messages via **MessageQueue**.
   3. **Blocking Writes**: When receiving data, the server might push responses back to the client, potentially blocking if the **Circular Buffer** is full.
+
+
+## What is an Event Pump?
+
+In summary, the Event Pump and Event Loop ensure that all events are handled efficiently and in a non-blocking manner, allowing the system to remain responsive while processing events asynchronously. The Event Queue serves as a buffer, and the Event Loop continuously processes each event, ensuring smooth communication between the Requestor and Receiver tasks.
