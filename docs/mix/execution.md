@@ -1,4 +1,4 @@
-
+## Flow d'Exécution du Système de Messagerie Asynchrone (Version Mixte) 
 ### Étape 1 : Initialisation et Liaison
 1. **Initialisation du `QueueBroker`** : Un thread serveur crée une instance de `QueueBroker` en lui donnant un nom spécifique.
 2. **Liaison à un port** : Le serveur appelle la méthode `bind` du `QueueBroker`, spécifiant un port et un `AcceptListener`. Cette méthode est non bloquante et retourne immédiatement.
