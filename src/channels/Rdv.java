@@ -48,7 +48,7 @@ public class Rdv {
     private void waitForBroker(Broker ab, Broker cb) {
         try {
             if (ab == null || cb == null) {
-                wait(500);  // Wait for the other channel to be created
+                wait();  // Wait for the other channel to be created
             }
         } catch (InterruptedException e) {
             //Thread.currentThread().interrupt(); // Handle interruption

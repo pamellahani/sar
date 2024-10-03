@@ -46,7 +46,7 @@ public class SimpleBroker extends Broker {
         synchronized (accepts) {
             while ((rdvPoint = accepts.get(port)) == null) {
                 try {
-                    accepts.wait(500); // Wait for the Rdv to be created
+                    accepts.wait(); // Wait for the Rdv to be created
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt(); // Handle interruption
                     return null;
