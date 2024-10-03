@@ -82,6 +82,20 @@ When the **send()** method is invoked, **ownership transfer** happens through **
   2. **Message Reception**: Once a connection is accepted, the server listens for messages via **MessageQueue**.
   3. **Blocking Writes**: When receiving data, the server might push responses back to the client, potentially blocking if the **Circular Buffer** is full.
 
+#### Detailed Flow:
+
+   Client Connects:
+      Client invokes `connect()` on QueueBroker.
+      ConnectListener (linked to Channel) triggers connected(), notifying the client that the connection is successful.
+
+   Server Accepts:
+      Server is bound to a port using bind() on QueueBroker.
+      AcceptListener triggers accepted(), indicating that the server has accepted a connection and a MessageQueue is ready.
+
+   Data Exchange:
+      Client sends data using `send()` on the MessageQueue.
+      Server’s Listener (linked to MessageQueue) triggers received() when data arrives, allowing the server to process the message.
+
 
 ## What is an Event Pump?
 
