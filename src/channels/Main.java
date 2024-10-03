@@ -2,11 +2,11 @@ package channels;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-        BrokerManager brokerManager = new BrokerManager();
+        //BrokerManager brokerManager = new BrokerManager();
         
         // Register brokers in the broker manager
-        SimpleBroker serverBroker = new SimpleBroker("ServerBroker", brokerManager);
-        SimpleBroker clientBroker = new SimpleBroker("ClientBroker", brokerManager);
+        SimpleBroker serverBroker = new SimpleBroker("ServerBroker");
+        SimpleBroker clientBroker = new SimpleBroker("ClientBroker");
         
         // Server task: Accept connection and read message from the client
         Task serverTask = new SimpleTask(serverBroker, () -> {
