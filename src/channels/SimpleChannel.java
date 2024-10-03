@@ -4,7 +4,7 @@ public class SimpleChannel extends Channel {
 
     private boolean isDisconnected;
     private final int port;
-    
+
     private static final int bufferSize = 1024;
 
     public SimpleChannel(int port, Broker broker) {
@@ -12,6 +12,7 @@ public class SimpleChannel extends Channel {
         this.inBuffer = new CircularBuffer(bufferSize);
         this.outBuffer = new CircularBuffer(bufferSize);
         this.isDisconnected = false;
+
     }
 
     public void connectChannels(SimpleChannel other, String brokerName) {
@@ -19,6 +20,7 @@ public class SimpleChannel extends Channel {
         this.outBuffer = other.inBuffer;
         System.out.println("Connecting to broker " + brokerName + " via port " + this.port);
     }
+
 
     @Override
     public int read(byte[] bytes, int offset, int length) throws DisconnectedException {
