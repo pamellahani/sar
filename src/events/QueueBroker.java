@@ -1,9 +1,11 @@
 package events;
 
+import channels.Broker;
+
 public abstract class QueueBroker {
 
     /**
-     * Listener interface for accepting incoming connections.
+     * Listener interface for accepting incoming connections
      */
     public interface AcceptListener {
         void accepted(MessageQueue q);
@@ -51,4 +53,10 @@ public abstract class QueueBroker {
      */ 
     public abstract boolean connect(String name, int port, ConnectListener l);
     
+
+    /**
+     * Get the Broker object
+     * @return Broker object
+     */
+    public abstract Broker getBroker();
 }

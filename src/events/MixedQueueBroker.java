@@ -4,11 +4,9 @@ import channels.*;
 
 public class MixedQueueBroker extends QueueBroker {
 
-    private final String name;
     private final Broker broker;
 
     public MixedQueueBroker(String name) {
-        this.name = name;
         this.broker = new SimpleBroker(name); // Link QueueBroker to Broker
     }
 
@@ -17,7 +15,7 @@ public class MixedQueueBroker extends QueueBroker {
         // Start a thread to accept connections asynchronously
         new Thread(() -> {
             Channel channel = broker.accept(port); // Accept the connection on the server side
-            MessageQueue queue = new SimpleMessageQueue(channel);
+            MessageQueue queue = new MixedMessageQueue(channel);
             listener.accepted(queue);  // Notify that a connection has been accepted
         }).start();
         return true;
@@ -25,7 +23,6 @@ public class MixedQueueBroker extends QueueBroker {
 
     @Override
     public boolean unbind(int port) {
-        // Logic to unbind from the port (could include stopping the server)
         return true;
     }
 
@@ -37,10 +34,15 @@ public class MixedQueueBroker extends QueueBroker {
             if (channel == null) {
                 listener.refused();
             } else {
-                MessageQueue queue = new SimpleMessageQueue(channel);
+                MessageQueue queue = new MixedMessageQueue(channel);
                 listener.connected(queue); // Notify that a connection has been established
             }
         }).start();
         return true;
+    }
+
+    @Override
+    public Broker getBroker() {
+        return broker;
     }
 }
