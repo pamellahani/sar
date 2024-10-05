@@ -5,18 +5,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class BrokerManager {
     
-    // Stores all the brokers with their associated names
+    private static BrokerManager instance;  // Singleton instance
     private final Map<String, Broker> brokers;
-    
 
-    public BrokerManager() {
+    private BrokerManager() {
         this.brokers = new ConcurrentHashMap<>();
     }
 
-    BrokerManager getSelf() {
-        return this;
+    // Singleton method to get the instance of BrokerManager
+    public static BrokerManager getInstance() {
+        if (instance == null) {
+            instance = new BrokerManager();
+        }
+        return instance;
     }
-
 
     public synchronized Broker getBrokerFromBM(String name) {
         Broker broker = brokers.get(name);
@@ -31,23 +33,7 @@ public class BrokerManager {
         brokers.put(broker.getName(), broker);
     }
 
-
-    // Deregisters a broker from the broker manager
     public synchronized void deregisterBroker(Broker broker) {
-
-        if (broker == null || broker.getName() == null || broker.getName().isEmpty()) {
-            throw new IllegalArgumentException("Broker or broker name cannot be null or empty.");
-        }
-        if (!brokers.containsKey(broker.getName())) {
-            throw new IllegalArgumentException("Broker with name " + broker.getName() + " does not exist.");
-        }
         brokers.remove(broker.getName());
     }
-
-
-    public BrokerManager getManager(){
-        return this;
-    }
-
-   
 }
