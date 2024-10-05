@@ -8,9 +8,10 @@ public class MixedMessageQueue extends MessageQueue {
     protected Listener listener;
     private final EventPump eventPump;  // Use EventPump for posting events
 
-    public MixedMessageQueue(Channel channel) {
+    // Accept EventPump from MixedQueueBroker
+    public MixedMessageQueue(Channel channel, EventPump eventPump) {
         this.channel = channel;
-        this.eventPump = new EventPump();  // Initialize the EventPump
+        this.eventPump = eventPump;  // Use the EventPump from the associated broker
     }
 
     @Override

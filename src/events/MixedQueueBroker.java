@@ -5,19 +5,20 @@ import channels.*;
 public class MixedQueueBroker extends QueueBroker {
 
     private final Broker broker;
+    private final EventPump eventPump;  // EventPump associated with this instance
 
     public MixedQueueBroker(String name) {
         this.broker = new SimpleBroker(name); // Link QueueBroker to Broker
+        this.eventPump = new EventPump();     // Initialize the EventPump
     }
 
     @Override
     public boolean bind(int port, AcceptListener listener) {
-        // Start a thread to accept connections asynchronously
-        new Thread(() -> {
+        eventPump.push(() -> {
             Channel channel = broker.accept(port); // Accept the connection on the server side
-            MessageQueue queue = new MixedMessageQueue(channel);
+            MessageQueue queue = new MixedMessageQueue(channel, eventPump);  // Pass EventPump to MessageQueue
             listener.accepted(queue);  // Notify that a connection has been accepted
-        }).start();
+        }); 
         return true;
     }
 
@@ -28,21 +29,24 @@ public class MixedQueueBroker extends QueueBroker {
 
     @Override
     public boolean connect(String name, int port, ConnectListener listener) {
-        // Start a thread to connect asynchronously
-        new Thread(() -> {
+        eventPump.push(() -> {
             Channel channel = broker.connect(name, port); // Connect to the broker on the client side
             if (channel == null) {
                 listener.refused();
             } else {
-                MessageQueue queue = new MixedMessageQueue(channel);
-                listener.connected(queue); // Notify that a connection has been established
+                MessageQueue queue = new MixedMessageQueue(channel, eventPump);  // Pass EventPump to MessageQueue
+                listener.connected(queue);  // Notify that a connection has been established
             }
-        }).start();
+        });
         return true;
     }
 
     @Override
     public Broker getBroker() {
         return broker;
+    }
+
+    public EventPump getEventPump() {
+        return eventPump;  // Provide access to the EventPump for other components
     }
 }
