@@ -13,13 +13,13 @@ public abstract class MessageQueue {
     }
 
 
-    abstract void setListener(Listener l); 
+    public abstract void setListener(Listener l); 
 
-    abstract boolean send(Message msg);
+    public abstract boolean send(Message msg);
 
-    abstract void close();
+    public abstract void close();
 
-    abstract boolean closed();
+    public abstract boolean closed();
 
 
 }

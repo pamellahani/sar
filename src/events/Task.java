@@ -6,7 +6,7 @@ public class Task {
 
     private boolean killed = false;
     private EventPump eventPump = new EventPump();  // Integrating EventPump
-    QueueBroker queueBroker; 
+    public QueueBroker queueBroker; 
 
     public Task(String name) {
         this.eventPump = new EventPump();

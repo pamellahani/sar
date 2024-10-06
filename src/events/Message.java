@@ -5,7 +5,7 @@ package events;
  */
 public class Message {
 
-    byte[] bytes; 
+    public byte[] bytes; 
     int offset;
     int length;
 
