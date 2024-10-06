@@ -1,54 +1,59 @@
 package events.tests;
 
-import events.*;
-
-import java.util.List;
+import events.QueueBroker;
+import events.MixedQueueBroker;
+import events.MessageQueue;
+import events.Message;
 
 public class EchoClient {
+    private final String host;
+    private final int port;
+    private final MixedQueueBroker broker;
 
-    private final Task clientTask;
+    public EchoClient(String host, int port) {
+        this.host = host;
+        this.port = port;
+        this.broker = new MixedQueueBroker("clientBroker");
+    }
 
-    public EchoClient(String name, int port, List<String> messagesToSend) {
-        // Create a client task using the QueueBroker
-        clientTask = new Task(name);
-
-        // Connect the client to the server
-        clientTask.queueBroker.connect(name, port, new QueueBroker.ConnectListener() {
+    public void start() {
+        broker.connect(host, port, new QueueBroker.ConnectListener() {
             @Override
             public void connected(MessageQueue queue) {
-                System.out.println("Client: Connected to the server.");
+                System.out.println("Client: Connected to server.");
+                String message = "Hello, Server!";
+                queue.send(new Message(message.getBytes(), 0, message.length()));
 
-                // Send each string in the list as a message
-                for (String message : messagesToSend) {
-                    byte[] messageBytes = message.getBytes();
-                    Message msg = new Message(messageBytes, 0, messageBytes.length);
-                    queue.send(msg);
-                    System.out.println("Client sent: " + message);
-                }
-
-                // Set a listener to receive echo responses from the server
                 queue.setListener(new MessageQueue.Listener() {
                     @Override
                     public void received(byte[] msg) {
-                        System.out.println("Client received echo: " + new String(msg));
+                        String response = new String(msg);
+                        System.out.println("Client received: " + response);
+                        queue.close();  // Close connection after receiving the echo
+                        stop();  // Stop the client after closing
                     }
 
                     @Override
                     public void sent(Message msg) {
-                        // Client doesn't need to handle sent event specifically
+                        System.out.println("Client: Sent message to server.");
                     }
 
                     @Override
                     public void closed() {
-                        System.out.println("Client: Server connection closed.");
+                        System.out.println("Client: Connection closed.");
                     }
                 });
             }
 
             @Override
             public void refused() {
-                System.out.println("Client: Connection refused by the server.");
+                System.out.println("Client: Connection refused.");
             }
         });
+    }
+
+    public void stop() {
+        System.out.println("Client: Shutting down.");
+        // Add any additional cleanup logic here if necessary
     }
 }
