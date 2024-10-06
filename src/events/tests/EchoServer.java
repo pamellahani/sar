@@ -1,40 +1,49 @@
 package events.tests;
 
-import events.*;
+import events.QueueBroker;
+import events.MixedQueueBroker;
+import events.MessageQueue;
 
 public class EchoServer {
+    private final int port;
+    private final MixedQueueBroker broker;
 
-    private final Task serverTask;
+    public EchoServer(int port) {
+        this.port = port;
+        this.broker = new MixedQueueBroker("EchoServer");
+    }
 
-    public EchoServer(String name, int port) {
-        // Create a server task using the QueueBroker
-        serverTask = new Task(name);
+    public void start() {
+        broker.bind(port, new QueueBroker.AcceptListener() {
+            @Override
+            public void accepted(MessageQueue queue) {
+                System.out.println("Server: Client connected.");
+                queue.setListener(new MessageQueue.Listener() {
+                    @Override
+                    public void received(byte[] msg) {
+                        String message = new String(msg);
+                        System.out.println("Server received: " + message);
+                        // Echo the message back to the client
+                        queue.send(new events.Message(msg, 0, msg.length));
+                    }
 
-        // Bind the server to a port and set up the accept listener
-        serverTask.queueBroker.bind(port, queue -> {
-            System.out.println("Server: Client connected.");
+                    @Override
+                    public void sent(events.Message msg) {
+                        System.out.println("Server: Echoed back the message.");
+                    }
 
-            // Set a listener to echo messages back to the client
-            queue.setListener(new MessageQueue.Listener() {
-                @Override
-                public void received(byte[] msg) {
-                    System.out.println("Server received: " + new String(msg));
-
-                    // Echo the received message back to the client
-                    Message message = new Message(msg, 0, msg.length);
-                    queue.send(message);
-                }
-
-                @Override
-                public void sent(Message msg) {
-                    System.out.println("Server echoed: " + new String(msg.bytes));
-                }
-
-                @Override
-                public void closed() {
-                    System.out.println("Server: Client connection closed.");
-                }
-            });
+                    @Override
+                    public void closed() {
+                        System.out.println("Server: Client connection closed.");
+                        stop();  // Stop the server when the client disconnects
+                    }
+                });
+            }
         });
+    }
+
+    public void stop() {
+        System.out.println("Server: Shutting down.");
+        // Add any additional cleanup logic here if necessary
     }
 }
