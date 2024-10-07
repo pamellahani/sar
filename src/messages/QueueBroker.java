@@ -11,8 +11,8 @@ public abstract class QueueBroker {
         this.broker = broker;
     }
 
-    public abstract MessageQueue accept(int port);
-    public abstract MessageQueue connect(String name, int port);
+    public abstract MessageQueueImpl accept(int port);
+    public abstract MessageQueueImpl connect(String name, int port);
 }
 
 
