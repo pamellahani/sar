@@ -13,6 +13,10 @@ public class EventPump {
         new Thread(this::eventLoop).start();
     }
 
+    public EventPump getPump() {
+        return this;
+    }
+
     /**
      * Event loop that continuously processes events from the queue.
      */
