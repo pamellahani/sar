@@ -13,11 +13,13 @@ public class EchoServer extends Task{
 			
 			QueueBroker qbroker = client.getQueueBroker();
 						
-			for(int i = 0; i < 2; i++) {
+			for(int i = 0; i < 1; i++) {
 				
-				MessageQueue messageQueue = qbroker.accept(80);
+				MessageQueue messageQueue = qbroker.accept(8080);
 				
 				byte[] message = messageQueue.receive();
+
+               // System.out.println("Server received: " + new String(message));
 
 				messageQueue.send(message, 0, message.length);
 						

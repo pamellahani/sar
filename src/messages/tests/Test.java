@@ -9,7 +9,7 @@ import messages.QueueBrokerImpl;
 public class Test {
 
     private EchoClient client1;
-	private EchoClient client2;
+	//private EchoClient client2;
 	private EchoServer server;
 	
 	private void setup() {
@@ -24,7 +24,7 @@ public class Test {
 		
         this.server = new EchoServer(queueBrokerServer);
 		this.client1 = new EchoClient(queueBrokerClient);
-		this.client2 = new EchoClient(queueBrokerClient);
+		//this.client2 = new EchoClient(queueBrokerClient);
 		
 	}
 	
@@ -35,7 +35,7 @@ public class Test {
 		test.setup();
 		
 		test.client1.start();
-		test.client2.start();
+		//test.client2.start();
 		
 		test.server.start();
 		
@@ -43,7 +43,7 @@ public class Test {
 			test.server.join();
 			
 			test.client1.join();
-			test.client2.join();
+			//test.client2.join();
 			
 	
 		}catch(InterruptedException e){
