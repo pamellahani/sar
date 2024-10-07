@@ -21,6 +21,8 @@ public class EchoClient extends Task{
 			MessageQueue messageQueue = qbroker.connect("server", 8080);
 		
 			messageQueue.send(message, 0, message.length);
+
+            //System.out.println("Client sent: " + string);
 			
 			byte[] response = messageQueue.receive();
 	
