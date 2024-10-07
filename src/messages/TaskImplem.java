@@ -2,7 +2,7 @@ package messages;
 
 public class TaskImplem extends Task {
 
-    
+
     public TaskImplem(QueueBroker b, Runnable r) {
         super(b, r);
     }
@@ -14,7 +14,7 @@ public class TaskImplem extends Task {
 
     @Override
     public QueueBroker getQueueBroker() {
-        return this.broker;
+        return this.qbroker;
     }
     
 }

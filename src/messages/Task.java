@@ -2,11 +2,11 @@ package messages;
 
 public abstract class Task extends Thread{
 
-    protected QueueBroker broker;
+    protected QueueBroker qbroker;
     protected Runnable task;
 
     public Task(QueueBroker b, Runnable r) {
-        this.broker = b;
+        this.qbroker = b;
         this.task = r;
     }
 

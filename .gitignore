@@ -1,15 +1,27 @@
+# Ignore log files
 *.log
 
+# Ignore compiled class files
+*.class
+
+# Ignore bin directory (where compiled files are stored)
 bin/
 
-.project
-
+# Ignore .settings directory (where Eclipse settings are stored)
 .settings/
 
-target/
+# Ignore .project file (Eclipse project file)
+.project
 
+# Ignore .metadata directory (where Eclipse workspace settings are stored)
+.metadata/
+
+# Ignore .classpath file (Eclipse classpath file)
 .classpath
+
+# Ignore javadoc config file
+src/channels/config.jdgenerator
 
 .idea/
 
-.metadata/
+.vscode/
