@@ -1,4 +1,4 @@
-# Queue Broker and Message Queue Specification
+# Queue Broker and Message Queue Specification - Mixed Event/Thread Model
 
 ### Overview
 The provided classes and interfaces facilitate an asynchronous communication framework using non-blocking operations and event-driven callbacks. This model allows effective communication across different threads without interfering with the thread's ability to execute other tasks.
