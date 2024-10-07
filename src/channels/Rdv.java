@@ -30,7 +30,7 @@ public class Rdv {
         return acceptingChannel;
     }
 
-    public synchronized Channel connect(Broker broker, int port) {
+    public Channel connect(Broker broker, int port) {
         this.brokerConnector = broker;
         this.connectingChannel = new SimpleChannel(port, brokerConnector);  // Create the channel
 
@@ -45,13 +45,13 @@ public class Rdv {
         return connectingChannel;
     }
 
-    private synchronized void waitForBroker(Broker ab, Broker cb) {
+    private void waitForBroker(Broker ab, Broker cb) {
         try {
             if (ab == null || cb == null) {
                 wait();  // Wait for the other channel to be created
             }
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // Handle interruption
+            //Thread.currentThread().interrupt(); // Handle interruption
         }
     }
 
@@ -60,5 +60,6 @@ public class Rdv {
         connectingChannel.connectChannels(acceptingChannel, brokerAcceptor.getName());
         acceptingChannel.connectChannels(connectingChannel, brokerConnector.getName());
         System.out.println("Channels successfully connected between client and server.");
+        notifyAll();
     }
 }

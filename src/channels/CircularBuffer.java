@@ -55,5 +55,9 @@ public class CircularBuffer {
     return bits;
   }
 
+  public int size() {
+      return m_head - m_tail;
+  }
+
 }
 
