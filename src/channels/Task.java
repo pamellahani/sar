@@ -27,18 +27,18 @@ public abstract class Task extends Thread{
         this.task = r;
     }
 
-    public Task(QueueBroker b, Runnable r) {
-        this.queueBroker = b;
-        this.task = r;
-    }
+    // public Task(QueueBroker b, Runnable r) {
+    //     this.queueBroker = b;
+    //     this.task = r;
+    // }
 
     public static Broker getBroker(Task task) {
         return task.broker;
     }
 
-    public QueueBroker getQueueBroker(Task task) {
-        return task.queueBroker;
-    }
+    // public QueueBroker getQueueBroker(Task task) {
+    //     return task.queueBroker;
+    // }
 
     @Override
     public void run() {
