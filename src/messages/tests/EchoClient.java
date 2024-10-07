@@ -2,8 +2,7 @@ package messages.tests;
 
 import java.util.UUID;
 
-import channels.Broker;
-import channels.Task;
+import messages.Task;
 import messages.MessageQueue;
 import messages.QueueBroker;
 
@@ -14,13 +13,13 @@ public class EchoClient extends Task{
 		super(b, () ->{
 			EchoClient client = (EchoClient) EchoClient.getTask();
 			
-			QueueBroker broker = client.getQueueBroker();
+			QueueBroker qbroker = client.getQueueBroker();
 			
 			String string = UUID.randomUUID().toString().repeat(10);
 			byte[] message = string.getBytes();
 	
-			MessageQueue messageQueue = broker.connect("serveur", 80);
-			
+			MessageQueue messageQueue = qbroker.connect("server", 8080);
+		
 			messageQueue.send(message, 0, message.length);
 			
 			byte[] response = messageQueue.receive();
@@ -37,4 +36,14 @@ public class EchoClient extends Task{
 			assert(messageQueue.closed() == true) : "Client Channel not disconnected";
 		});
 	}
+
+    @Override
+    public void run() {
+       this.task.run();
+    }
+
+    @Override
+    protected QueueBroker getQueueBroker() {
+        return this.qbroker;
+    }
 }

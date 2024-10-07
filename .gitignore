@@ -23,3 +23,5 @@ bin/
 src/channels/config.jdgenerator
 
 .idea/
+
+.vscode/

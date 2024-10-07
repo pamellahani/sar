@@ -1,7 +1,7 @@
 package messages.tests;
 
-import channels.Broker;
-import channels.Task;
+
+import messages.Task;
 import messages.MessageQueue;
 import messages.QueueBroker;
 
@@ -11,11 +11,11 @@ public class EchoServer extends Task{
 		super(b, () ->{
 			EchoServer client = (EchoServer) EchoServer.getTask();
 			
-			QueueBroker broker = client.getQueueBroker();
+			QueueBroker qbroker = client.getQueueBroker();
 						
-			for(int i = 0; i < 3; i++) {
+			for(int i = 0; i < 2; i++) {
 				
-				MessageQueue messageQueue = broker.accept(80);
+				MessageQueue messageQueue = qbroker.accept(80);
 				
 				byte[] message = messageQueue.receive();
 
@@ -29,5 +29,15 @@ public class EchoServer extends Task{
 			}
 		});
 	}
+
+    @Override
+    public void run() {
+       this.task.run();
+    }
+
+    @Override
+    protected QueueBroker getQueueBroker() {
+        return this.qbroker;
+    }
     
 }

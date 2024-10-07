@@ -26,7 +26,6 @@ public class Test {
 		this.client1 = new EchoClient(queueBrokerClient);
 		this.client2 = new EchoClient(queueBrokerClient);
 		
-		;		
 	}
 	
 	public static void main(String[] args) {
