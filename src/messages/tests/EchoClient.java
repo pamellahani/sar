@@ -11,31 +11,28 @@ public class EchoClient extends Task{
 	
 	public EchoClient(QueueBroker b) {
 		super(b, () ->{
+
 			EchoClient client = (EchoClient) EchoClient.getTask();
-			
 			QueueBroker qbroker = client.getQueueBroker();
 			
-			String string = UUID.randomUUID().toString().repeat(10);
-			byte[] message = string.getBytes();
+			String message = UUID.randomUUID().toString();
+			byte[] messageBytes = message.getBytes();
 	
 			MessageQueue messageQueue = qbroker.connect("server", 8080);
 		
-			messageQueue.send(message, 0, message.length);
+			messageQueue.send(messageBytes, 0, messageBytes.length);
 
             //System.out.println("Client sent: " + string);
 			
 			byte[] response = messageQueue.receive();
-	
 			messageQueue.close();
 	
-	
-			//Tests
-			for(int i = 0; i < message.length; i++){
-				assert(response[i] == message[i]) : "Data recieved different from the one sent : " + i;
+			for(int i = 0; i < messageBytes.length; i++){
+				assert(response[i] == messageBytes[i]);
 			}	
 	
-			assert(messageQueue != null) : "Client Channel not initialized";
-			assert(messageQueue.closed() == true) : "Client Channel not disconnected";
+			assert(messageQueue != null); 
+			assert(messageQueue.closed() == true); 
 		});
 	}
 
