@@ -1,5 +1,7 @@
 package events.tests;
 
+import java.util.UUID;
+
 import events.*; 
 
 public class EchoClient {
@@ -23,7 +25,7 @@ public class EchoClient {
                 @Override
                 public void connected(MessageQueue queue) {
                     System.out.println("Client: Connected to server.");
-                    String message = "Hello, Server!";
+                    String message = UUID.randomUUID().toString();
                     queue.send(new Message(message.getBytes(), 0, message.length()));
                     queue.setListener(new MessageQueue.Listener() {
                         @Override
@@ -58,5 +60,6 @@ public class EchoClient {
     public void stop() {
         System.out.println("Client: Shutting down.");
         clientTask.kill();  
+        
     }
 }

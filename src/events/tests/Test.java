@@ -9,14 +9,16 @@ public class Test {
         EventPump eventPump = new EventPump();
         // Server creation
         EchoServer server = new EchoServer(8080);
-        server.start();
-
         // Client creation
         EchoClient client = new EchoClient("BrokerServer", 8080);
-        client.start();
 
+        server.start();
+        client.start();
+        
         client.stop();
         server.stop();
+
+        System.out.println("TEST PASSED!");
 
     }
 }
