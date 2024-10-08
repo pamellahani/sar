@@ -4,7 +4,6 @@ import channels.*;
 
 public class MessageQueueImpl extends MessageQueue {
     private final Channel channel; // The channel used for communication
-    private final Object lock = new Object(); // Lock object for synchronization
 
     /**
      * Constructs a MessageQueue that interfaces with a specific channel.
@@ -23,25 +22,20 @@ public class MessageQueueImpl extends MessageQueue {
      */
     @Override
     public void send(byte[] bytes, int offset, int length) {
-        synchronized (lock) {
-            int bytesWritten = 0;
-            while (bytesWritten < length) {
-                while (channel.outBuffer.full()) {
-                    try {
-                        lock.wait(); // Wait until there is space in the buffer
-                    } catch (InterruptedException e) {
-                        //do nothing
-                        return;
-                    }
-                }
-                try {
-                    bytesWritten += channel.write(bytes, offset + bytesWritten, length - bytesWritten);
-                } catch (DisconnectedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+        int bytesWritten = 0;
+        while (bytesWritten < length) {
+            while (channel.outBuffer.full()) {
+                // Retry until there is space in the buffer
+                if (channel.disconnected()) {
+                    return; // Exit if the channel is disconnected
                 }
             }
-            lock.notifyAll(); // Notify any waiting receivers that there is now data in the buffer
+            try {
+                bytesWritten += channel.write(bytes, offset + bytesWritten, length - bytesWritten);
+            } catch (DisconnectedException e) {
+                e.printStackTrace();
+                return;
+            }
         }
     }
 
@@ -50,39 +44,34 @@ public class MessageQueueImpl extends MessageQueue {
      * @return the byte array received
      * @throws DisconnectedException if the channel is disconnected
      */
-    public byte[] receive(){
-        synchronized (lock) {
-            while (channel.inBuffer.empty()) {
-                try {
-                    lock.wait(); // Wait until there is data in the buffer
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // Set the interrupt flag again
-                    return null;
-                }
+    @Override
+    public byte[] receive() {
+        while (channel.inBuffer.empty()) {
+            if (channel.disconnected()) {
+                return null; // Exit if the channel is disconnected
             }
-            byte[] tempBytes = new byte[channel.inBuffer.size()]; // Temp buffer to read data
-            int bytesRead = 0; 
-
-            try {
-                bytesRead = channel.read(tempBytes, 0, tempBytes.length);
-            } catch (DisconnectedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            byte[] actualBytes = new byte[bytesRead]; // Create an array of the correct size
-            System.arraycopy(tempBytes, 0, actualBytes, 0, bytesRead); 
-
-            lock.notifyAll(); // Notify any waiting senders that there is now space in the buffer
-            return actualBytes;
         }
+        byte[] tempBytes = new byte[channel.inBuffer.size()]; // Temp buffer to read data
+        int bytesRead = 0;
+
+        try {
+            bytesRead = channel.read(tempBytes, 0, tempBytes.length);
+        } catch (DisconnectedException e) {
+            e.printStackTrace();
+        }
+
+        byte[] actualBytes = new byte[bytesRead]; // Create an array of the correct size
+        System.arraycopy(tempBytes, 0, actualBytes, 0, bytesRead);
+
+        return actualBytes;
     }
 
+    @Override
     public void close() {
         channel.disconnect();
-        lock.notifyAll();
     }
 
+    @Override
     public boolean closed() {
         return channel.disconnected();
     }
