@@ -6,14 +6,19 @@ public class MixedMessageQueue extends MessageQueue {
 
     protected Channel channel;
     protected Listener listener;
-    private final EventPump eventPump;  // Use EventPump for posting events
+    private final EventPump eventPump;  
 
     // Accept EventPump from MixedQueueBroker
     public MixedMessageQueue(Channel channel, EventPump eventPump) {
         this.channel = channel;
-        this.eventPump = eventPump;  // Use the EventPump from the associated broker
+        this.eventPump = eventPump; 
     }
 
+    /**
+     * Sets the listener for this message queue and starts an event pump to listen for incoming messages.
+     * 
+     * @param l the listener to be set
+     */
     @Override
     public void setListener(Listener l) {
         this.listener = l;
@@ -34,6 +39,14 @@ public class MixedMessageQueue extends MessageQueue {
         });
     }
 
+    /**
+     * Sends a message by pushing a task to the event pump that writes the message
+     * to the channel and notifies the listener. If a DisconnectedException occurs,
+     * the listener is notified of the closure.
+     *
+     * @param msg the message to be sent
+     * @return true if the message was successfully pushed to the event pump
+     */
     @Override
     public boolean send(Message msg) {
         eventPump.push(() -> {

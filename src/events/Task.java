@@ -8,9 +8,9 @@ public class Task {
     private EventPump eventPump = new EventPump();  // Integrating EventPump
     public QueueBroker queueBroker; 
 
-    public Task(String name) {
+    public Task(String brokerName) {
         this.eventPump = new EventPump();
-        this.queueBroker = new MixedQueueBroker(name);
+        this.queueBroker = new MixedQueueBroker(brokerName);
     }
 
     /**
@@ -56,6 +56,14 @@ public class Task {
      */
     public Broker getBroker(String name) {
        return queueBroker.getBroker();
+    }
+
+    /**
+     * Get queue broker
+     * @return QueueBroker object
+     */
+    public QueueBroker getQueueBroker() {
+        return queueBroker;
     }
 
 
