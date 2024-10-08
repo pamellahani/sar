@@ -1,0 +1,42 @@
+@startuml
+actor User as user
+participant Task
+participant Broker
+participant "Broker Manager" as BrokerManager
+participant Channel
+participant "CircularBuffer (inBuffer)" as InBuffer
+participant "CircularBuffer (outBuffer)" as OutBuffer
+
+user -> Task: Initiates asyncDisconnect()
+Task -> Channel: Calls asyncDisconnect()
+Channel -> Channel: Set isDisconnecting = true
+Channel -> BrokerManager: Notify disconnection process start
+
+Channel -> InBuffer: Check if empty
+alt InBuffer not empty
+    InBuffer -> Channel: Return not empty
+    Channel -> Channel: Wait for inBuffer to empty
+end
+
+Channel -> OutBuffer: Check if empty
+alt OutBuffer not empty
+    OutBuffer -> Channel: Return not empty
+    Channel -> Channel: Wait for outBuffer to empty
+end
+
+loop Asynchronous Waiting
+    Channel -> InBuffer: Check if empty
+    InBuffer -> Channel: Return status
+
+    Channel -> OutBuffer: Check if empty
+    OutBuffer -> Channel: Return status
+end
+
+Channel -> Channel: Set isDisconnected = true
+Channel -> BrokerManager: Notify disconnection complete
+
+Channel -> Task: Return control to Task
+
+user -> Channel : read (buffer) / write (buffer)
+Channel -> user : IllegalStateException (disconnected)
+@enduml
