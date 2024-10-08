@@ -2,13 +2,12 @@ package events;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class EventPump {
 
     private final BlockingQueue<Runnable> eventQueue = new LinkedBlockingQueue<>();
     private volatile boolean running = true;
-    private final AtomicInteger activeEvents = new AtomicInteger(0);  // Track active events
+    //private final AtomicInteger activeEvents = new AtomicInteger(0);  // Track active events
 
     public EventPump() {
         // Start the event loop in a new thread
@@ -19,16 +18,14 @@ public class EventPump {
      * Event loop that continuously processes events from the queue.
      */
     private void eventLoop() {
-        while (running || activeEvents.get() > 0) {
+        while (running) {
             try {
                 Runnable event = pop();  // Use pop to retrieve and process events
                 if (event != null) {
-                    activeEvents.incrementAndGet();  // Increment active event count
                     event.run();  // Execute the task/event
-                    activeEvents.decrementAndGet();  // Decrement when the event is finished
                 }
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();  // Re-set interrupt flag
+                
             }
         }
     }
@@ -42,7 +39,7 @@ public class EventPump {
         try {
             eventQueue.put(event);  // Adds the event to the queue
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();  // Re-set interrupt flag
+            
         }
     }
 
