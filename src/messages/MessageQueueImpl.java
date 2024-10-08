@@ -23,11 +23,17 @@ public class MessageQueueImpl extends MessageQueue {
     @Override
     public void send(byte[] bytes, int offset, int length) {
         int bytesWritten = 0;
+        long startTime = System.currentTimeMillis();
         while (bytesWritten < length) {
             while (channel.outBuffer.full()) {
                 // Retry until there is space in the buffer
                 if (channel.disconnected()) {
                     return; // Exit if the channel is disconnected
+                }
+
+                if (System.currentTimeMillis() - startTime > 5000) {
+                   // System.err.println("Timeout in send due to full buffer.");
+                    return;
                 }
             }
             try {
@@ -45,26 +51,35 @@ public class MessageQueueImpl extends MessageQueue {
      * @throws DisconnectedException if the channel is disconnected
      */
     @Override
-    public byte[] receive() {
-        while (channel.inBuffer.empty()) {
-            if (channel.disconnected()) {
-                return null; // Exit if the channel is disconnected
-            }
-        }
-        byte[] tempBytes = new byte[channel.inBuffer.size()]; // Temp buffer to read data
-        int bytesRead = 0;
-
-        try {
-            bytesRead = channel.read(tempBytes, 0, tempBytes.length);
-        } catch (DisconnectedException e) {
-            e.printStackTrace();
+public byte[] receive() {
+    long startTime = System.currentTimeMillis();
+    while (channel.inBuffer.empty()) {
+        if (channel.disconnected()) {
+            return null; // Exit if the channel is disconnected
         }
 
-        byte[] actualBytes = new byte[bytesRead]; // Create an array of the correct size
-        System.arraycopy(tempBytes, 0, actualBytes, 0, bytesRead);
-
-        return actualBytes;
+        // Timeout after 5 seconds
+        if (System.currentTimeMillis() - startTime > 5000) {
+           // System.err.println("Timeout in receive due to empty buffer.");
+            return null;
+        }
     }
+    
+    byte[] tempBytes = new byte[channel.inBuffer.size()]; // Temp buffer to read data
+    int bytesRead = 0;
+
+    try {
+        bytesRead = channel.read(tempBytes, 0, tempBytes.length);
+    } catch (DisconnectedException e) {
+        e.printStackTrace();
+    }
+
+    byte[] actualBytes = new byte[bytesRead]; // Create an array of the correct size
+    System.arraycopy(tempBytes, 0, actualBytes, 0, bytesRead); // Copy the actual bytes received
+
+    return actualBytes;
+}
+
 
     @Override
     public void close() {
