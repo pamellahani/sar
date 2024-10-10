@@ -1,13 +1,33 @@
 # Queue Broker and Message Queue Specification
 
 ### Overview
-The provided classes and interfaces facilitate an asynchronous communication framework using non-blocking operations and event-driven callbacks. This model allows effective communication across different threads without interfering with the thread's ability to execute other tasks.
+
+This version of communication between Product and Consumer forms a hybrid asynchronous communication framework that combines event-driven and multithreaded models. By merging the flexibility of events with the simplicity of threads, this hybrid design achieves non-blocking communication while also retaining an intuitive, sequential flow of control. This approach is particularly effective for building scalable, massively concurrent systems without the downsides of each individual model.
 
 ### Classes and Interfaces
 
+#### Event-Based Components
 1. **QueueBroker** - An abstract class responsible for managing connections and binding to ports. It uses listeners to handle accepted connections asynchronously.
 
 2. **MessageQueue** - An abstract class for a queue that supports sending messages, setting listeners for receiving messages, and managing the queue's lifecycle.
+3. **Event Task** - A task that can be executed by the Event Pump. It is used to process the messages received by the QueueBroker.
+4. **AcceptListener** - An interface for handling accepted connections.
+5. **ConnectListener** - An interface for handling connection attempts.
+6. **Listener** - An interface for handling received messages.
+7. **Reader** - Reads Payload from the MessageQueue and sends it to the Consumer, hence transferring the ownership of the Payload to the Consumer's listener.
+8. **PostEvent** - Recieves an event from either the QueueBroker's Runnable or from the Readable instance and posts an event to the Listener interface.
+
+---
+
+1. **Event Pump and Event Loop** - The Event Pump is responsible for managing the event loop and dispatching events to the appropriate handlers.
+   
+2.  **Event Queue** - A queue that holds events to be processed by the Event Pump. The Event Queue is thread-safe and allows for the posting of events from multiple threads.
+----
+#### Thread-Based Components
+1. **Channel**: A channel contains 2 CircualrBuffers, enabling bidirectional communication between the Product and Consumer.For more details, refer to the [Channel Specification](./channel.md).
+2. **Broker**: A broker is responsible for managing the connections and binding to ports. It uses listeners to handle accepted connections asynchronously.
+3. **Task**: A task is a unit of work that can be executed by a thread. It is used to process the messages received by the Broker.
+  
 
 ### Asynchronous Flow and Interaction Model
 
@@ -56,29 +76,6 @@ The provided classes and interfaces facilitate an asynchronous communication fra
 3. Clients use `QueueBroker` to connect, triggering `ConnectListener` callbacks.
 4. Both clients and the server use their respective `MessageQueue` instances to send and receive messages through listener callbacks, managing flow control and connection state asynchronously.
 
-### Ownership differences in `send` method
 
-In programming, the concept of "ownership" often pertains to which part of the code is responsible for managing the memory and lifecycle of data objects. When discussing the two `send` methods in the context of Java (as inferred from the use of byte arrays and method signatures), the notion of ownership particularly involves who is responsible for the byte arrays being passed around and how they are managed after being sent. Here’s how it applies to each method:
-
-#### 1. `boolean send(byte[] bytes)`
-
-In this method, a complete byte array is passed to the `send` method. 
-
-**Ownership Before the Call:**
-The caller owns the byte array and is responsible for its creation and management.
-
-**Ownership After the Call:**
-The byte array is handed over to the `MessageQueue` for sending. However, in Java, actual ownership in terms of memory management does not change because Java uses a garbage-collected environment where memory deallocation is handled automatically.
-  The `MessageQueue` might simply queue the reference to the byte array, not a copy. Therefore, it is crucial that the caller does not modify the array while it is still in use by the queue, unless such behavior is clearly safe and intentional.
-
-#### 2. `boolean send(byte[] bytes, int offset, int length)`
-This method involves sending a specific segment of a byte array, using `offset` and `length` parameters to determine the portion of the array to send.
-
-**Ownership Before the Call:** As with the first method, the caller is responsible for managing the original byte array.
-
-**Ownership After the Call:**
-- In scenarios where a new byte array might be created (e.g., `Arrays.copyOfRange(bytes, offset, offset + length)`), the newly created byte array (the subset) is now managed by the `MessageQueue`.
-- The original byte array remains under the ownership of the caller, who must ensure it is not improperly modified while the sent segment may still be in use—assuming a copy is made. If no copy is made and only a reference or slice is passed, similar caution applies as with the first method.
-
-#### Memory Management Considerations: 
-Since Java handles memory deallocation via its garbage collection mechanism, the concept of ownership here is more about the responsibility of not altering the content of the byte arrays while they are in use rather than deallocating memory. The critical aspect is ensuring that data integrity is maintained throughout the operation, especially in concurrent environments or multi-threaded applications where data race conditions might occur.
+### Why use a Hybrid Thread-Event Approach?
+[Explanation the benefits of using a hybrid thread-event model for communication between Product and Consumer.](./hybrid_approach.md)
