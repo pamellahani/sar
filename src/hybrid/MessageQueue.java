@@ -1,4 +1,4 @@
-package events;
+package hybrid;
 
 public abstract class MessageQueue {
     

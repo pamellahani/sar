@@ -1,14 +1,14 @@
-package events;
+package hybrid;
 
 import channels.*;
 
-public class Task {
+public class EventTask {
 
     private boolean killed = false;
     private EventPump eventPump = new EventPump();  // Integrating EventPump
     public QueueBroker queueBroker; 
 
-    public Task(String brokerName) {
+    public EventTask(String brokerName) {
         this.eventPump = new EventPump();
         this.queueBroker = new MixedQueueBroker(brokerName);
     }
