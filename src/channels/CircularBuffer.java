@@ -52,6 +52,9 @@ class CircularBuffer {
 		m_elements[m_end] = elem;
 		m_end = next;
 	}
+  public int size() {
+      return m_head - m_tail;
+  }
 
 	/**
 	 * @return the next available byte, if the buffer is not empty,

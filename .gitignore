@@ -8,3 +8,11 @@ bin/
 
 .project
 
+
+target/
+
+.classpath
+
+.idea/
+
+.vscode/
