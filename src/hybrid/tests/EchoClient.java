@@ -1,4 +1,4 @@
-package events.tests;
+package hybrid.tests;
 
 import java.util.UUID;
 

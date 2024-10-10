@@ -1,4 +1,4 @@
-package events;
+package hybrid;
 
 /**
  * A message to be sent or received.
