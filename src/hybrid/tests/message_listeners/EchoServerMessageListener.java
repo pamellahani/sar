@@ -8,11 +8,11 @@ import hybrid.MessageQueue.Listener;
 
 public class EchoServerMessageListener implements Listener{
 	
-	private MessageQueue _queue;
+	private MessageQueue message_queue;
 	private static int cpt = 0;
 	
-	public EchoServerMessageListener(MessageQueue queue) {
-		_queue = queue;
+	public EchoServerMessageListener(MessageQueue mq) {
+		message_queue = mq;
 	}
 
     @Override
@@ -23,7 +23,7 @@ public class EchoServerMessageListener implements Listener{
 			
 			@Override
 			public void run() {
-				_queue.send(new Message(bytes,0,bytes.length));
+				message_queue.send(new Message(bytes,0,bytes.length));
 				
 			}
 		});
@@ -32,15 +32,15 @@ public class EchoServerMessageListener implements Listener{
 
 	@Override
 	public void closed() {
-		_queue.close();
+		message_queue.close();
 	}
 
 	@Override
 	public void sent(Message message) {
-		_queue.close();
+		message_queue.close();
 		
-		assert(_queue != null) : "Server queue not initialized";
-		assert(_queue.closed() == true) : "Server queue not disconnected";
+		assert(message_queue != null) : "Server queue not initialized";
+		assert(message_queue.closed() == true) : "Server queue not disconnected";
 		
 		if(cpt++ >= 2) {
 			System.out.println("Server passed");
