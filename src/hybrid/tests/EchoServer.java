@@ -13,7 +13,8 @@ public class EchoServer implements Runnable{
     
         @Override
         public void run() {
-            queue_broker.bind(80, new EchoAcceptListener(queue_broker));
+            System.out.println("Server is running");
+            queue_broker.bind(8080, new EchoAcceptListener(queue_broker));
             
         }
 }

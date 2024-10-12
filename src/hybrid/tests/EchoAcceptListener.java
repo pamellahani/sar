@@ -19,7 +19,9 @@ public class EchoAcceptListener implements QueueBroker.AcceptListener {
 		queue.setListener(new EchoServerMessageListener(queue));
 		
 		if(client_counter++ >= 2) {
+			System.out.println("client counter is greater than 2");
 			queue_broker.unbind(80);
+			System.out.println("unbind successful");
 		}
 	}
 }

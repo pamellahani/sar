@@ -18,12 +18,14 @@ public class EchoConnectListener implements QueueBroker.ConnectListener {
 
         // Set the listener and send the random message
         messageQueue.setListener(new EchoClientMessageListener(messageQueue, message));
+        System.out.println("Connected to the server");
         messageQueue.send(message);
+        System.out.println("Message was sent");
     }
 
     @Override
     public void refused() {
-        System.out.println("Server: Connection refused by the server.");
+        System.out.println("Connection refused by the server.");
     }
 
     // Method to generate a random string of alphabetic characters

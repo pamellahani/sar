@@ -12,6 +12,6 @@ public class EchoClient implements Runnable{
 
 	@Override
 	public void run() {
-		queue_broker.connect("serverBroker", 80, new EchoConnectListener());		
+		queue_broker.connect("serverBroker", 8080, new EchoConnectListener());		
 	}
 }
