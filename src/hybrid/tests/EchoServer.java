@@ -4,16 +4,16 @@ import hybrid.QueueBroker;
 
 public class EchoServer implements Runnable{
 	
-    private QueueBroker _broker;
+    private QueueBroker queue_broker;
         
-        public EchoServer(QueueBroker broker) {
-            _broker = broker;
+        public EchoServer(QueueBroker qb) {
+            queue_broker = qb;
         }
     
     
         @Override
         public void run() {
-            _broker.bind(80, new EchoAcceptListener(_broker));
+            queue_broker.bind(80, new EchoAcceptListener(_broker));
             
         }
 }
