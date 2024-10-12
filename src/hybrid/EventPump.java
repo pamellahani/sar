@@ -54,7 +54,7 @@ public class EventPump extends Thread{
     		while (this.isRunnableEmpty() && isRunning) {
     			synchronized (this) {
                     try {
-                        wait(); //PROBLEM: process stuck here. No one is notifying this thread. Debug to track stopPump() method
+                        wait(); //TODO: process stuck here. No one is notifying this thread. Debug to track stopPump() method
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         return;
