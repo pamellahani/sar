@@ -27,7 +27,11 @@ public class EventPump extends Thread{
 	synchronized public void unpost(Runnable runnable) {
 		runnable_queue.remove(runnable);
 	}
-
+	
+	synchronized private boolean isRunnableEmpty() {
+		return runnable_queue.isEmpty();
+	}
+	
     synchronized private Runnable getNext() {
     	currentRunnable= runnable_queue.poll();
     	return currentRunnable;
@@ -35,10 +39,6 @@ public class EventPump extends Thread{
     
     public static Runnable getCurrentRunnable() {
     	return currentRunnable;
-    }
-    
-    synchronized private boolean runnbaleIsEmpty() {
-    	return runnable_queue.isEmpty();
     }
     
     synchronized public void stopPump() {
@@ -51,10 +51,10 @@ public class EventPump extends Thread{
     public void run() {
 
         while (isRunning) {
-    		while (this.runnbaleIsEmpty() && isRunning) {
+    		while (this.isRunnableEmpty() && isRunning) {
     			synchronized (this) {
                     try {
-                        wait(); //PROBLEM: process stuck here. No one is notifying this thread
+                        wait(); //PROBLEM: process stuck here. No one is notifying this thread. Debug to track stopPump() method
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         return;
