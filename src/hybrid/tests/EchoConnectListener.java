@@ -28,9 +28,9 @@ public class EchoConnectListener implements QueueBroker.ConnectListener {
 
     // Method to generate a random string of alphabetic characters
     private String generateRandomMessage() {
-        int length = 10; // Length of the random message
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         Random random = new Random();
+        int length = random.nextInt(4991) + 10;  // Random length between 10 and 5000
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder messageBuilder = new StringBuilder(length);
 
         for (int i = 0; i < length; i++) {
