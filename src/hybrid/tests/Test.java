@@ -1,6 +1,6 @@
-package events.tests;
+package hybrid.tests;
 
-import events.EventPump;
+import hybrid.EventPump;
 
 public class Test {
 

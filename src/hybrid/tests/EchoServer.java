@@ -1,15 +1,19 @@
-package events.tests;
+package hybrid.tests;
 
-import events.*; 
+import channels.Task;
+import hybrid.*;
+import hybrid.Message;
+import hybrid.MessageQueue;
+import hybrid.QueueBroker; 
 
 public class EchoServer {
     private final int port;
    // private final MixedQueueBroker broker;
-    private final Task serverTask; 
+    private final EventTask serverTask; 
 
     public EchoServer(int port) {
         this.port = port;
-        this.serverTask = new Task("BrokerServer"); 
+        this.serverTask = new EventTask("BrokerServer"); 
         //this.broker = new MixedQueueBroker("EchoServer");
     }
 

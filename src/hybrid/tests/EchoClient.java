@@ -1,20 +1,20 @@
-package events.tests;
+package hybrid.tests;
 
 import java.util.UUID;
 
-import events.*; 
+import hybrid.*; 
 
 public class EchoClient {
     private final String host;
     private final int port;
     //private final MixedQueueBroker qbroker;
-    private final Task clientTask;  // Add Task to manage client tasks
+    private final EventTask clientTask;  // Add Task to manage client tasks
 
     public EchoClient(String host, int port) {
         this.host = host;
         this.port = port;
         //this.qbroker = new MixedQueueBroker("clientBroker");
-        this.clientTask = new Task("BrokerClient");  // Create a new Task
+        this.clientTask = new EventTask("BrokerClient");  // Create a new Task
     }
 
     public void start() {
