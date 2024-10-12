@@ -1,64 +1,81 @@
 package hybrid;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.LinkedList;
+import java.util.Queue;
+public class EventPump extends Thread{
+	
+	private static final EventPump INSTANCE = new EventPump();
 
-public class EventPump {
-
-    private final BlockingQueue<Runnable> eventQueue = new LinkedBlockingQueue<>();
-    private volatile boolean running = true;
-    //private final AtomicInteger activeEvents = new AtomicInteger(0);  // Track active events
-
-    public EventPump() {
-        // Start the event loop in a new thread
-        new Thread(this::eventLoop).start();
+	private Queue<Runnable> runnable_queue;
+	private static Runnable currentRunnable;
+	private boolean isRunning;
+	
+	private EventPump() {
+		runnable_queue = new LinkedList<Runnable>();
+		isRunning = true;
+	}
+	
+	public static EventPump getInstance() {
+        return INSTANCE;
     }
 
-    /**
-     * Event loop that continuously processes events from the queue.
-     */
-    private void eventLoop() {
-        while (running) {
-            try {
-                Runnable event = pop();  // Use pop to retrieve and process events
-                if (event != null) {
-                    event.run();  // Execute the task/event
+	synchronized public void post(Runnable runnable) {
+		runnable_queue.add(runnable);
+		this.notify();
+	}
+
+	synchronized public void unpost(Runnable runnable) {
+		runnable_queue.remove(runnable);
+	}
+
+    synchronized private Runnable getNext() {
+    	currentRunnable= runnable_queue.poll();
+    	return currentRunnable;
+    }
+    
+    public static Runnable getCurrentRunnable() {
+    	return currentRunnable;
+    }
+    
+    synchronized private boolean runnbaleIsEmpty() {
+    	return runnable_queue.isEmpty();
+    }
+    
+    synchronized public void stopPump() {
+    	this.isRunning = false;
+    	this.notifyAll();
+    }
+    
+    
+    @Override
+    public void run() {
+
+        while (isRunning) {
+    		while (this.runnbaleIsEmpty() && isRunning) {
+    			synchronized (this) {
+                    try {
+                        wait(); //PROBLEM: process stuck here. No one is notifying this thread
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        return;
+                    }
                 }
-            } catch (InterruptedException e) {
-                
+			}
+        	
+        	if(!isRunning) {
+        		return;
+        	}
+            		
+        	this.getNext();
+        
+        	try {
+        		currentRunnable.run();
+            } catch (Exception e) {
+            	
             }
+
+            	 
         }
-    }
-
-    /**
-     * Push a new event to the queue.
-     * This acts as the enqueue operation, adding a task to the event queue.
-     * @param event the runnable task to push into the queue
-     */
-    public void push(Runnable event) {
-        try {
-            eventQueue.put(event);  // Adds the event to the queue
-        } catch (InterruptedException e) {
-            
-        }
-    }
-
-    /**
-     * Pop an event from the queue.
-     * This acts as the dequeue operation, retrieving a task from the event queue.
-     * @return the next runnable task from the queue or null if interrupted
-     * @throws InterruptedException if the thread is interrupted while waiting
-     */
-    public Runnable pop() throws InterruptedException {
-        // Retrieves and removes the head of the queue, waiting if necessary
-        return eventQueue.take();  // Retrieve and remove the next event from the queue
-    }
-
-    /**
-     * Stop the event pump from processing events.
-     * The event loop will finish once all tasks are completed.
-     */
-    public void stop() {
-        running = false;
+        
     }
 }
