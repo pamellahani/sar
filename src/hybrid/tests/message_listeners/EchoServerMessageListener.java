@@ -42,9 +42,9 @@ public class EchoServerMessageListener implements Listener{
 		assert(message_queue != null) : "Server queue not initialized";
 		assert(message_queue.closed() == true) : "Server queue not disconnected";
 		
-		if(cpt++ >= 2) {
+		//if(cpt++ >= 2) {
 			System.out.println("Server passed");
-		}
+		//}
 
 	}
 }

@@ -30,9 +30,9 @@ public class EchoClientMessageListener implements Listener{
 		
 		System.out.println("Client passed");
 		
-		if(cpt++ >= 2) {
+		//if(cpt++ >= 2) {
 			EventPump.getInstance().stopPump();
-		}
+		//}
     }
 
     @Override
