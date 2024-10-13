@@ -7,7 +7,7 @@ import hybrid.tests.message_listeners.EchoServerMessageListener;
 public class EchoAcceptListener implements QueueBroker.AcceptListener {
 
     private QueueBroker queue_broker;
-	private int client_counter = 0;
+	//private int client_counter = 0;
 	
 	 public EchoAcceptListener(QueueBroker qb) {
 		queue_broker = qb;

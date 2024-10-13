@@ -10,7 +10,7 @@ import hybrid.MessageQueue.Listener;
 public class EchoServerMessageListener implements Listener{
 	
 	private MessageQueue message_queue;
-	private static int cpt = 0;
+	//private static int cpt = 0;
 	
 	public EchoServerMessageListener(MessageQueue mq) {
 		message_queue = mq;

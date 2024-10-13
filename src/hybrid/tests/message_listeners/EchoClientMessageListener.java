@@ -9,7 +9,7 @@ public class EchoClientMessageListener implements Listener{
 
 	private MessageQueue private_queue;
 	private Message private_message;
-	private static int cpt = 0;
+	//private static int cpt = 0;
 
 
 	public EchoClientMessageListener(MessageQueue queue, Message message) {
