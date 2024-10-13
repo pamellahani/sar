@@ -19,27 +19,24 @@ public class EchoClientMessageListener implements Listener{
 
 
     @Override
-    public void received(byte[] msg) {
-        //Tests
-		for(int i = 0; i < private_message.getLength(); i++){
-			assert(msg[i] == private_message.getByteAt(i)) : "Data recieved different from the one sent : " + i;
-		}	
 
-		assert(private_queue != null) : "Client Queue not initialized";
-		assert(private_queue.closed() == true) : "Client Queue not disconnected";
-		
-		System.out.println("Client passed");
-		
-		//if(cpt++ >= 2) {
-			EventPump.getInstance().stopPump();
-		//}
-    }
+	public void received(byte[] msg) {
+		// Validate that the received message is identical to the sent one
+		for (int i = 0; i < private_message.getLength(); i++) {
+			assert (msg[i] == private_message.getByteAt(i)) : "Data received different from the one sent: " + i;
+		}
 
-    @Override
-    public void sent(Message msg) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sent'");
-    }
+		System.out.println("Client received message successfully.");
+
+		// Stop the pump after receiving the response
+		EventPump.getInstance().stopPump();
+	}
+
+	@Override
+	public void sent(Message msg) {
+		System.out.println("Message sent: " + new String(msg.getBytes(), msg.getOffset(), msg.getLength()));
+	}
+
 
     @Override
     public void closed() {

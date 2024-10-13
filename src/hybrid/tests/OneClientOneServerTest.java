@@ -32,22 +32,21 @@ public class OneClientOneServerTest {
 	}
 	
 	public static void main(String[] args) {
-		
 		OneClientOneServerTest hybrid_system = new OneClientOneServerTest();
-
 		hybrid_system.setup();
 		
+		// Post client and server runnables to event pump
 		hybrid_system.client.post(hybrid_system.runnable_client);
 		hybrid_system.server.post(hybrid_system.runnable_server);
-		
+	
+		// Wait for the event pump to complete
 		try {
 			EventPump.getInstance().join();
+			System.out.println("TEST PASSED!");
+			
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println("TEST PASSED!");
-			
-				
 	}
+	
 }

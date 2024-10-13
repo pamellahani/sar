@@ -15,14 +15,13 @@ public class EchoAcceptListener implements QueueBroker.AcceptListener {
 
 	@Override
 	public void accepted(MessageQueue queue) {
-		
 		queue.setListener(new EchoServerMessageListener(queue));
-		
-		//if(client_counter++ >= 2) {
-			System.out.println("client counter is greater than 2");
-			queue_broker.unbind(8080);
-			System.out.println("unbind successful");
-		//}
+		System.out.println("Client connected.");
+	
+		// Allow only one client and unbind immediately after
+		queue_broker.unbind(8080);
+		System.out.println("Server unbound from port 8080 to stop further connections.");
 	}
+	
 }
 
