@@ -1,70 +1,42 @@
 package hybrid;
 
-import channels.*;
+import java.util.LinkedList;
+import java.util.List;
 
 public class EventTask {
 
-    private boolean killed = false;
-    private EventPump eventPump = new EventPump();  // Integrating EventPump
-    public QueueBroker queueBroker; 
+	private List<Event> events;
+    private static EventTask currentTask;
+	private boolean isKilled;
+	private EventPump eventPump;
+	
+	public EventTask() {
+		eventPump = EventPump.getInstance();
+		isKilled = false;
+		events = new LinkedList<Event>();
+	}
 
-    public EventTask(String brokerName) {
-        this.eventPump = new EventPump();
-        this.queueBroker = new MixedQueueBroker(brokerName);
-    }
+	public void post(Runnable r) {
+		Event event = new Event(currentTask, this, r);
+		events.add(event);
+		eventPump.post(event);
+	}
+	
+	public void kill() {
+		this.isKilled = true;
+	}
 
-    /**
-     * Post (push) a runnable task to the EventPump.
-     * This will push the event to the event queue.
-     * @param r the runnable task
-     */
-    public void post(Runnable r) {
-        if (!killed) {
-            // Push the task (event) to the EventPump's event queue
-            eventPump.push(r);
-        }
-    }
+	public boolean killed() {
+		return isKilled;
+	}
 
-    /**
-     * Start processing the event queue.
-     */
-    public void start() {
-        // The EventPump automatically starts processing in a separate thread
-    }
-
-    /**
-     * Kill the task.
-     * This stops new events from being posted.
-     */
-    public void kill() {
-        killed = true;
-        eventPump.stop();  // Stop the event pump from processing further
-    }
-
-    /**
-     * Check if the task is killed.
-     * @return true if the task is killed, false otherwise.
-     */
-    public boolean killed() {
-        return killed;
-    }
-
-    /**
-     * Link a Task with a Broker
-     * @param port
-     * @return Broker object
-     */
-    public Broker getBroker(String name) {
-       return queueBroker.getBroker();
-    }
-
-    /**
-     * Get queue broker
-     * @return QueueBroker object
-     */
-    public QueueBroker getQueueBroker() {
-        return queueBroker;
-    }
+	public static EventTask getTask() {
+		return currentTask;
+	}
+	
+	public static void setCurrentTask(EventTask task) {
+		currentTask = task;
+	}
 
 
 }
