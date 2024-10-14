@@ -5,6 +5,20 @@ import channels.Broker;
 public abstract class QueueBroker {
 
     /**
+     * FYI:
+     *  even though this variable is not used here, it is required in order to set the broker name 
+     *  in Broker class (in the constructor)
+    **/
+    @SuppressWarnings("unused") 
+
+    private String brokerName;
+
+    //define constructor: QueueBroker(String name)
+    QueueBroker(String name) {
+        this.brokerName = name;
+    }
+
+    /**
      * Listener interface for accepting incoming connections
      */
     public interface AcceptListener {
