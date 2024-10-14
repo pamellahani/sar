@@ -61,7 +61,7 @@ public class EventPump extends Thread{
 				}
 			}
 
-			if (!isRunning) {
+			if (!isRunning && isRunnableEmpty()) {
 				System.out.println("EventPump stopping...");
 				return;
 			}
@@ -81,6 +81,7 @@ public class EventPump extends Thread{
 			}
 		}
 	}
+
 
     // @Override
     // public void run() {
