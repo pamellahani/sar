@@ -60,7 +60,7 @@ public class MixedMessageQueue extends MessageQueue {
             sender.notifyAll();  // Notify the sender thread that it should stop
             System.out.println("MessageQueue is closing, notifying sender thread.");
         }
-        sender.interrupt();
+        sender.stopSender();  // Explicitly stop the sender
     }
     
     @Override
