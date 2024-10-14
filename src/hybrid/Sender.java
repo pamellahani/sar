@@ -30,7 +30,9 @@ public class Sender extends Thread {
                 messageQueue.sub_send(msg);
             }
         }
+        System.out.println("Sender thread stopping as the message queue is closed.");
     }
+
 
     public void notifySender() {
         synchronized (this) {
