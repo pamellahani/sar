@@ -21,13 +21,13 @@ public class EventPump extends Thread{
 
 	synchronized public void post(Runnable runnable) {
 		runnable_queue.add(runnable);
-		this.notify();  // Ensure that the waiting thread is notified when a new runnable is added
+		this.notifyAll();  // Ensure that the waiting thread is notified when a new runnable is added
 	}
 
 	synchronized public void unpost(Runnable runnable) {
 		runnable_queue.remove(runnable);
 	}
-
+	
     synchronized private Runnable getNext() {
     	currentRunnable= runnable_queue.poll();
     	return currentRunnable;
@@ -71,6 +71,10 @@ public class EventPump extends Thread{
 				try {
 					System.out.println("EventPump executing runnable...");
 					nextRunnable.run();
+					if (isRunnableEmpty() && !isRunning) {
+						System.out.println("All tasks are done, stopping EventPump...");
+						return;
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
