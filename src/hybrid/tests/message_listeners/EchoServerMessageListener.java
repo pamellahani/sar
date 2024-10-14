@@ -23,8 +23,10 @@ public class EchoServerMessageListener implements Listener{
 			message_queue.send(new Message(bytes, 0, bytes.length));
 			System.out.println("Server received and echoed the message.");
 
-			// Stop the EventPump after processing the message
-			EventPump.getInstance().stopPump();
+			// Stop the EventPump only after ensuring message has been processed
+			if (message_queue.closed()) {
+				EventPump.getInstance().stopPump();
+			}
 		});
 	}
 

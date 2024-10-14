@@ -19,18 +19,18 @@ public class EchoClientMessageListener implements Listener{
 
 
     @Override
+public void received(byte[] msg) {
+    // Validate that the received message is identical to the sent one
+    for (int i = 0; i < private_message.getLength(); i++) {
+        assert (msg[i] == private_message.getByteAt(i)) : "Data received different from the one sent: " + i;
+    }
 
-	public void received(byte[] msg) {
-		// Validate that the received message is identical to the sent one
-		for (int i = 0; i < private_message.getLength(); i++) {
-			assert (msg[i] == private_message.getByteAt(i)) : "Data received different from the one sent: " + i;
-		}
+    System.out.println("Client received message successfully.");
 
-		System.out.println("Client received message successfully.");
+    // Stop the EventPump after receiving the response
+    EventPump.getInstance().stopPump();
+}
 
-		// Stop the pump after receiving the response
-		EventPump.getInstance().stopPump();
-	}
 
 	@Override
 	public void sent(Message msg) {

@@ -18,10 +18,11 @@ public class EchoAcceptListener implements QueueBroker.AcceptListener {
 		queue.setListener(new EchoServerMessageListener(queue));
 		System.out.println("Client connected.");
 	
-		// Allow only one client and unbind immediately after
+		// Unbind immediately after accepting one client to prevent multiple connections
 		queue_broker.unbind(8080);
 		System.out.println("Server unbound from port 8080 to stop further connections.");
 	}
+	
 	
 }
 
