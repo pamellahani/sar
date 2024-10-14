@@ -11,26 +11,29 @@ public class Sender extends Thread {
 
     @Override
     public void run() {
-        while (isRunning && !messageQueue.isClosed()) {
+        while (isRunning) {
             synchronized (this) {
-                while (messageQueue.getMessagesQueue().isEmpty() && !messageQueue.closed()) {
+                while (messageQueue.getMessagesQueue().isEmpty() && !messageQueue.isClosed()) {
                     try {
-                        this.wait();
+                        this.wait(); 
                     } catch (InterruptedException e) {
-                        return; // Channel is now closed
+                        System.out.println("Sender thread interrupted, stopping.");
+                        return;
                     }
                 }
             }
+    
+            // If the queue is closed, exit the sender thread
             if (messageQueue.isClosed()) {
+                System.out.println("Message queue closed, stopping sender thread.");
                 return;
             }
-
+    
             Message msg = messageQueue.getMessagesQueue().poll();
             if (msg != null) {
                 messageQueue.sub_send(msg);
             }
         }
-        System.out.println("Sender thread stopping as the message queue is closed.");
     }
 
 
