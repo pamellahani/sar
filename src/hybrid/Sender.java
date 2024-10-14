@@ -15,7 +15,7 @@ public class Sender extends Thread {
             synchronized (this) {
                 while (messageQueue.getMessagesQueue().isEmpty() && !messageQueue.isClosed()) {
                     try {
-                        this.wait(); 
+                        this.wait();  // Wait for new messages to be added or for queue to close
                     } catch (InterruptedException e) {
                         System.out.println("Sender thread interrupted, stopping.");
                         return;
@@ -23,9 +23,8 @@ public class Sender extends Thread {
                 }
             }
     
-            // If the queue is closed, exit the sender thread
-            if (messageQueue.isClosed()) {
-                System.out.println("Message queue closed, stopping sender thread.");
+            if (messageQueue.isClosed() || !isRunning) {
+                System.out.println("Message queue closed or sender is stopped, stopping sender thread.");
                 return;
             }
     
@@ -34,8 +33,16 @@ public class Sender extends Thread {
                 messageQueue.sub_send(msg);
             }
         }
+        System.out.println("Sender thread stopping as all tasks are done or queue is closed.");
     }
-
+    
+    public void stopSender() {
+        isRunning = false;
+        synchronized (this) {
+            this.notifyAll();  // Notify in case it's waiting
+        }
+    }
+    
 
     public void notifySender() {
         synchronized (this) {

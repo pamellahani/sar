@@ -47,40 +47,43 @@ public class EventPump extends Thread{
     }
     
 	@Override
-	public void run() {
-		while (isRunning) {
-			synchronized (this) {
-				while (this.isRunnableEmpty() && isRunning) {
-					try {
-						System.out.println("EventPump waiting...");
-						wait();  // Wait until notified of a new task or stop signal
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-						return;
-					}
-				}
-			}
+public void run() {
+    while (isRunning || !isRunnableEmpty()) {
+        synchronized (this) {
+            while (isRunnableEmpty() && isRunning) {
+                try {
+                    System.out.println("EventPump waiting...");
+                    wait();  // Wait until notified of a new task or stop signal
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+        }
 
-			if (!isRunning && isRunnableEmpty()) {
-				System.out.println("EventPump stopping...");
-				return;
-			}
+        if (!isRunning && isRunnableEmpty()) {
+            System.out.println("EventPump stopping...");
+            return;
+        }
 
-			Runnable nextRunnable = getNext();
-			if (nextRunnable != null) {
-				try {
-					System.out.println("EventPump executing runnable...");
-					nextRunnable.run();
-					if (isRunnableEmpty() && !isRunning) {
-						System.out.println("All tasks are done, stopping EventPump...");
-						return;
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+        Runnable nextRunnable = getNext();
+        if (nextRunnable != null) {
+            try {
+                System.out.println("EventPump executing runnable...");
+                nextRunnable.run();
+                synchronized (this) {
+                    runnable_queue.remove(nextRunnable);  // Remove the task after execution
+                }
+                if (isRunnableEmpty() && !isRunning) {
+                    System.out.println("All tasks are done, stopping EventPump...");
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
 
 
     // @Override
