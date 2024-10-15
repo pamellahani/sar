@@ -74,13 +74,17 @@ public void run() {
                 synchronized (this) {
                     runnable_queue.remove(nextRunnable);  // Remove the task after execution
                 }
-                if (isRunnableEmpty() && !isRunning) {
+                if (!isRunning ) {
                     System.out.println("All tasks are done, stopping EventPump...");
                     return;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+        else if (isRunnableEmpty()){
+            System.out.println("No runnable to execute...");    
+            return; 
         }
     }
 }
