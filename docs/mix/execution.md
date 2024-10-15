@@ -1,22 +1,22 @@
-## Flow d'Exécution du Système de Messagerie Asynchrone (Version Mixte) 
-### Étape 1 : Initialisation et Liaison
-1. **Initialisation du `QueueBroker`** : Un thread serveur crée une instance de `QueueBroker` en lui donnant un nom spécifique.
-2. **Liaison à un port** : Le serveur appelle la méthode `bind` du `QueueBroker`, spécifiant un port et un `AcceptListener`. Cette méthode est non bloquante et retourne immédiatement.
+## Execution Flow of the Asynchronous Messaging System (Hybrid Version)
 
-### Étape 2 : Connexion des Clients
-1. **Initialisation de la Connexion** : Un client (ou un autre serveur) désirant établir une connexion avec le `QueueBroker` utilise la méthode `connect` :
-   - `boolean connect(String name, int port, AcceptListener listener)`: Tente de connecter au `QueueBroker` en utilisant le `name` et `port` spécifiés, enregistrant un `AcceptListener` pour gérer les réponses de la connexion. Cette méthode est également non bloquante.
-   - Si la tentative de connexion est lancée avec succès, `connect` retourne `true`.
-   - En cas de réponse positive, l'`AcceptListener` du client est notifié via `accepted(MessageQueue queue)`, où `queue` est la `MessageQueue` attribuée à cette connexion.
-   - Si la connexion est refusée, un `ConnectListener` peut être utilisé pour capturer cet événement à travers la méthode `refused`.
+### Step 1: Initialization and Binding
+1. **QueueBroker Initialization**: A server thread creates an instance of `QueueBroker` by giving it a specific name.
+2. **Binding to a Port**: The server calls the `bind` method of the `QueueBroker`, specifying a port and an `AcceptListener`. This method is non-blocking and returns immediately.
 
-### Étape 3 : Gestion des Connexions Entrantes
-1. **Notification de Connexions Acceptées** : Lorsqu'une connexion entrante est acceptée par le serveur, le `AcceptListener` configuré lors de la liaison (`bind`) est invoqué, recevant la `MessageQueue` associée à cette nouvelle connexion.
+### Step 2: Client Connections
+1. **Connection Initialization**: A client (or another server) wishing to establish a connection with the `QueueBroker` uses the `connect` method:
+   - `boolean connect(String name, int port, ConnectListener listener)`: Attempts to connect to the `QueueBroker` using the specified `name` and `port`, registering a `ConnectListener` to handle the connection responses. This method is also non-blocking.
+   - If the connection attempt is initiated successfully, `connect` returns `true`.
+   - If the connection is successful, the client's `ConnectListener` is notified via `connected(MessageQueue queue)`, where `queue` is the `MessageQueue` assigned to this connection.
+   - If the connection is refused, the `ConnectListener` is notified via the `refused` method.
 
-### Étape 4 : Communication Asynchrone
-1. **Réception des Données** : Les `MessageQueue` des clients écoutent les messages entrants via des `Listener` configurés. Lorsque des données sont reçues, la méthode `received` est appelée.
-2. **Envoi de Messages** : Les messages sont envoyés en utilisant les méthodes `send` de `MessageQueue`, qui sont non bloquantes.
+### Step 3: Managing Incoming Connections
+1. **Notification of Accepted Connections**: When an incoming connection is accepted by the server, the `AcceptListener` configured during the binding (`bind`) is invoked, receiving the `MessageQueue` associated with this new connection.
 
-### Étape 5 : Fermeture et Nettoyage
-1. **Fermeture des Connexions** : Les `MessageQueue` peuvent être fermées par l'appel de `close`, après quoi `closed` peut être utilisée pour vérifier l'état de la queue.
+### Step 4: Asynchronous Communication
+1. **Data Reception**: The clients' `MessageQueue` listen for incoming messages through configured `Listener`s. When data is received, the `received` method is called.
+2. **Sending Messages**: Messages are sent using the `send` methods of `MessageQueue`, which are non-blocking and add the message to the queue for sending.
 
+### Step 5: Closing and Cleanup
+1. **Closing Connections**: The `MessageQueue` can be closed by calling `close`, after which `closed` can be used to check the state of the queue.
