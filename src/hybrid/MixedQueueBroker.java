@@ -1,53 +1,89 @@
 package hybrid;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import channels.*;
 
 public class MixedQueueBroker extends QueueBroker {
 
-    private final Broker broker;
-    private final EventPump eventPump;  
+    private SimpleBroker br;
+
+    // this map contains the port number associated to the thread that is listening
+    private Map<Integer, Thread> bindTh;
 
     public MixedQueueBroker(String name) {
-        this.broker = new SimpleBroker(name); 
-        this.eventPump = new EventPump();    
-    }
+		super(name);
+		br = new SimpleBroker(name);
+		bindTh = new HashMap<Integer, Thread>();
+	}
 
-    @Override
-    public boolean bind(int port, AcceptListener listener) {
-        eventPump.push(() -> {
-            Channel channel = broker.accept(port); // happens on server side
-            MessageQueue queue = new MixedMessageQueue(channel, eventPump);  // Pass EventPump to MessageQueue
-            listener.accepted(queue);  // Notify that a connection has been accepted
-        }); 
-        return true;
-    }
-
-    @Override
     public boolean unbind(int port) {
-        return true;
+        if (bindTh.containsKey(port)) {
+            Thread t = bindTh.get(port);
+            t.interrupt();
+            bindTh.remove(port);
+            return true;
+        }
+        return false;
     }
 
-    @Override
-    public boolean connect(String name, int port, ConnectListener listener) {
-        eventPump.push(() -> {
-            Channel channel = broker.connect(name, port); // happens on client side
-            if (channel == null) {
-                listener.refused();
-            } else {
-                MessageQueue queue = new MixedMessageQueue(channel, eventPump);  // Pass EventPump to MessageQueue
-                listener.connected(queue);  // Notify that a connection has been established
+    public boolean bind(int port, AcceptListener listener) {
+        if (bindTh.containsKey(port)) {
+            return false;
+        }
+
+        Thread thread = new Thread();
+
+        thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                do {
+
+                    SimpleChannel channelAccept = (SimpleChannel) br.accept(port);
+                    if (channelAccept != null) {
+                        MessageQueue mq = new MixedMessageQueue(channelAccept);
+                        EventTask task = new EventTask();
+                        task.post(() -> listener.accepted(mq));
+                    }
+
+                } while (bindTh.containsKey(port));
+
             }
         });
+        bindTh.put(port, thread);
+        thread.start();
         return true;
+    }
+
+    public boolean connect(String name, int port, ConnectListener listener) {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                SimpleChannel channelConnect = (SimpleChannel) br.connect(name, port);
+
+                EventTask task = new EventTask();
+                if (channelConnect == null) {
+                    task.post(() -> listener.refused());
+                } else {
+                    MessageQueue mq = new MixedMessageQueue(channelConnect);
+                    task.post(() -> listener.connected(mq));
+                }
+
+            }
+        }).start();
+        return true;
+    }
+
+    public String name() {
+        return br.getName();
     }
 
     @Override
     public Broker getBroker() {
-        return broker;
+        return br;
     }
 
-    public EventPump getEventPump() {
-        return eventPump;  
-    }
-    
 }
