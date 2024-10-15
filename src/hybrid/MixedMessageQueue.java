@@ -111,4 +111,9 @@ public class MixedMessageQueue extends MessageQueue {
     public boolean isClosed() {
         return isClosed;
     }
+
+    @Override
+    public Listener getMessageListener() {
+        return message_listener;
+    }
 }
