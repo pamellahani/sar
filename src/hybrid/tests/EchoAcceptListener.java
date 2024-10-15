@@ -20,6 +20,10 @@ public class EchoAcceptListener implements QueueBroker.AcceptListener {
 	
 		// Unbind immediately after accepting one client to prevent multiple connections
 		queue_broker.unbind(8080);
+
+		//pump should be stopped after receiving the response
+		queue.getMessageListener().received(new byte[0]); 
+		
 		System.out.println("Server unbound from port 8080 to stop further connections.");
 	}
 	
