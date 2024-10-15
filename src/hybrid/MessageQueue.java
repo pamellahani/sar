@@ -11,8 +11,7 @@ public abstract class MessageQueue {
         void sent(Message msg);
         void closed();  
     }
-
-
+    
     public abstract void setListener(Listener l); 
 
     public abstract boolean send(Message msg);
@@ -20,6 +19,8 @@ public abstract class MessageQueue {
     public abstract void close();
 
     public abstract boolean closed();
+
+    public abstract Listener getMessageListener();
 
 
 }
