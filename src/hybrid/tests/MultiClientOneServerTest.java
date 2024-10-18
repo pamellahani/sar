@@ -51,7 +51,7 @@ public class MultiClientOneServerTest {
 			System.out.println("TEST PASSED!");
 			
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
