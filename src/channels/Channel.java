@@ -9,8 +9,8 @@ package channels;
 
 public abstract class Channel {
 
-    protected CircularBuffer inBuffer;
-    protected CircularBuffer outBuffer;
+    public CircularBuffer inBuffer;
+    public CircularBuffer outBuffer;
     protected boolean isDisconnected;
 
     public abstract int read(byte[] bytes, int offset, int length) throws DisconnectedException; ;

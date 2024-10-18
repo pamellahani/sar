@@ -19,8 +19,8 @@ public class SingleTest {
 		//Create a broker manager to manage brokers
         BrokerManager manager = new BrokerManager();
 		
-		Broker brokerClient = new SimpleBroker("client", manager); 
-		Broker brokerServer = new SimpleBroker("server", manager);
+		Broker brokerClient = new SimpleBroker("client"); 
+		Broker brokerServer = new SimpleBroker("server");
 		
 		QueueBroker queueBrokerClient = new QueueBrokerImpl(brokerClient);
 		QueueBroker queueBrokerServer = new QueueBrokerImpl(brokerServer);

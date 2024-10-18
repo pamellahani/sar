@@ -8,7 +8,7 @@ public class BrokerManager {
     private static BrokerManager instance;  // Singleton instance
     private final Map<String, Broker> brokers;
 
-    private BrokerManager() {
+    public BrokerManager() {
         this.brokers = new ConcurrentHashMap<>();
     }
 

@@ -19,14 +19,14 @@ public class MultiTest {
         BrokerManager manager = new BrokerManager();
 
         // Create brokers for server and clients
-        Broker brokerServer = new SimpleBroker("server", manager);
+        Broker brokerServer = new SimpleBroker("server");
         QueueBroker queueBrokerServer = new QueueBrokerImpl(brokerServer);
 
         // Initialize the server with the server-side broker
         this.server = new EchoServer(queueBrokerServer);
 
         for (int i = 0; i < numClients; i++) {
-            Broker brokerClient = new SimpleBroker("client" + i, manager);
+            Broker brokerClient = new SimpleBroker("client" + i);
             QueueBroker queueBrokerClient = new QueueBrokerImpl(brokerClient);
             clients[i] = new EchoClient(queueBrokerClient);
         }
