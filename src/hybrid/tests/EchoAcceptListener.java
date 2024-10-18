@@ -1,5 +1,6 @@
 package hybrid.tests;
 
+import hybrid.EventPump;
 import hybrid.MessageQueue;
 import hybrid.QueueBroker;
 import hybrid.tests.message_listeners.EchoServerMessageListener;
@@ -25,6 +26,8 @@ public class EchoAcceptListener implements QueueBroker.AcceptListener {
 		queue.getMessageListener().received(new byte[0]); 
 		
 		System.out.println("Server unbound from port 8080 to stop further connections.");
+
+		EventPump.getInstance().stopPump();
 	}
 	
 	
