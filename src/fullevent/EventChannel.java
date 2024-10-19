@@ -1,7 +1,8 @@
 package fullevent;
 
-import channels.Channel;
+import channels.Channel; //abstract class
 import channels.DisconnectedException;
+import channels.CircularBuffer;
 
 public class EventChannel extends Channel {
 
@@ -12,20 +13,12 @@ public class EventChannel extends Channel {
         void onBufferNotEmpty(EventChannel channel);
     }
 
-
     private ChannelListener listener;
-    private byte[] buffer;
-    private int bufferSize;
-    private int writePosition;
-    private int readPosition;
+    private CircularBuffer buffer;
     private boolean disconnected;
     
-
     public EventChannel(int bufferSize) {
-        this.bufferSize = bufferSize;
-        this.buffer = new byte[bufferSize];
-        this.writePosition = 0;
-        this.readPosition = 0;
+        this.buffer = new CircularBuffer(bufferSize);
         this.disconnected = false;
     }
 
@@ -39,7 +32,7 @@ public class EventChannel extends Channel {
             throw new DisconnectedException("Channel is disconnected");
         }
 
-        if (readPosition == writePosition) {
+        if (buffer.empty()) {
             if (listener != null) {
                 listener.onBufferEmpty(this);
             }
@@ -47,10 +40,13 @@ public class EventChannel extends Channel {
         }
 
         int bytesRead = 0;
-        while (bytesRead < length && readPosition != writePosition) {
-            bytes[offset + bytesRead] = buffer[readPosition];
-            readPosition = (readPosition + 1) % bufferSize;
-            bytesRead++;
+        try {
+            while (bytesRead < length && !buffer.empty()) {
+                bytes[offset + bytesRead] = buffer.pull();
+                bytesRead++;
+            }
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
         }
 
         if (listener != null && bytesRead > 0) {
@@ -67,25 +63,26 @@ public class EventChannel extends Channel {
         }
 
         int bytesWritten = 0;
-        while (bytesWritten < length) {
-            int nextWritePosition = (writePosition + 1) % bufferSize;
-            if (nextWritePosition == readPosition) {
-                if (listener != null) {
-                    listener.onBufferFull(this);
+        try {
+            while (bytesWritten < length) {
+                if (buffer.full()) {
+                    if (listener != null) {
+                        listener.onBufferFull(this);
+                    }
+                    break; // Buffer is full
                 }
-                break; // Buffer is full
+                buffer.push(bytes[offset + bytesWritten]);
+                bytesWritten++;
             }
-
-            buffer[writePosition] = bytes[offset + bytesWritten];
-            writePosition = nextWritePosition;
-            bytesWritten++;
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
         }
 
         if (listener != null) {
             if (bytesWritten > 0) {
                 listener.onBufferNotFull(this);
             }
-            if (readPosition != writePosition) {
+            if (!buffer.empty()) {
                 listener.onBufferNotEmpty(this);
             }
         }
