@@ -19,6 +19,7 @@ public class EventChannel extends Channel {
     private int writePosition;
     private int readPosition;
     private boolean disconnected;
+    
 
     public EventChannel(int bufferSize) {
         this.bufferSize = bufferSize;
