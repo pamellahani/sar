@@ -6,10 +6,10 @@ import channels.DisconnectedException;
 public class EventChannel extends Channel {
 
     public interface ChannelListener {
-        void onBufferFull(Channel channel);
-        void onBufferNotFull(Channel channel);
-        void onBufferEmpty(Channel channel);
-        void onBufferNotEmpty(Channel channel);
+        void onBufferFull(EventChannel channel);
+        void onBufferNotFull(EventChannel channel);
+        void onBufferEmpty(EventChannel channel);
+        void onBufferNotEmpty(EventChannel channel);
     }
 
 
