@@ -13,7 +13,7 @@ public class EventMessageQueue extends MessageQueue {
     private boolean isClosed;
     private Queue<Message> messagesLinkedQueue;
     private EventChannel mqChannel;
-    private Listener messageListener;
+    private MessageListener messageListener;
 
     // Accept EventChannel from MixedQueueBroker
     public EventMessageQueue(EventChannel channel) {
@@ -62,7 +62,7 @@ public class EventMessageQueue extends MessageQueue {
      * @param l the listener to be set
      */
     @Override
-    public void setListener(Listener l) {
+    public void setListener(MessageListener l) {
         this.messageListener = l;
     }
 
@@ -119,7 +119,7 @@ public class EventMessageQueue extends MessageQueue {
     }
 
     @Override
-    public Listener getMessageListener() {
+    public MessageListener getMessageListener() {
         return messageListener;
     }
 }
