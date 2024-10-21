@@ -3,9 +3,9 @@ package fullevent.tests.message_listeners;
 import fullevent.EventMessageQueue;
 import hybrid.EventPump;
 import hybrid.Message;
-import hybrid.MessageQueue.Listener;
+import hybrid.MessageQueue.MessageListener;
 
-public class EchoClientMessageListener implements Listener{
+public class EchoClientMessageListener implements MessageListener{
 
 	private EventMessageQueue private_queue;
 	private Message private_message;
