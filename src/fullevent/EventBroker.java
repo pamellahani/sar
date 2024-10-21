@@ -1,9 +1,8 @@
 package fullevent;
 
 import java.util.HashMap;
-import java.util.function.Consumer;
-
 import hybrid.EventTask;
+import java.util.function.Consumer;
 
 public class EventBroker extends Broker {
 
@@ -38,15 +37,13 @@ public class EventBroker extends Broker {
             accepts.put(port, rdvPoint);
             brokerListener.onWait(this, null);
             channelHolder[0] = rdvPoint.accept(this, port);
+
+            if (channelHolder[0] != null) {
+                onChannelReady(channelHolder[0]);
+            }
         });
 
-        // Wait for the task to complete before returning the Channel
-        while (channelHolder[0] == null) {
-            // Busy wait until the channel is assigned
-            Thread.yield();
-        }
-
-        return channelHolder[0];
+        return null; // Return null initially, callback will handle the channel once ready
     }
 
     @Override
@@ -55,42 +52,39 @@ public class EventBroker extends Broker {
         final Channel[] channelHolder = new Channel[1]; // Used to store the Channel result
 
         task.post(() -> {
-            EventBroker targetBroker = (EventBroker) EventBrokerManager.getInstance().getBrokerFromBM(brokerName);
-            if (targetBroker == null) {
-                throw new IllegalArgumentException("Broker with name " + brokerName + " not found.");
-            }
-            channelHolder[0] = auxConnect(targetBroker, port);
+            EventBrokerManager.getInstance().getBrokerFromBM(brokerName, targetBroker -> {
+                if (targetBroker == null) {
+                    throw new IllegalArgumentException("Broker with name " + brokerName + " not found.");
+                }
+                auxConnect(targetBroker, port, channel -> {
+                    channelHolder[0] = channel;
+                    if (channelHolder[0] != null) {
+                        onChannelReady(channelHolder[0]);
+                    }
+                });
+            });
         });
 
-        // Wait for the task to complete before returning the Channel
-        while (channelHolder[0] == null) {
-            // Busy wait until the channel is assigned
-            Thread.yield();
-        }
-
-        return channelHolder[0];
+        return null; // Return null initially, callback will handle the channel once ready
     }
 
-    private Channel auxConnect(EventBroker bm, int port) {
+    private void auxConnect(EventBroker bm, int port, Consumer<Channel> callback) {
         EventTask task = new EventTask();
-        final Channel[] channelHolder = new Channel[1]; // Used to store the Channel result
 
         task.post(() -> {
             EventRdv rdvPoint;
             synchronized (accepts) {
-                while ((rdvPoint = accepts.get(port)) == null) {
+                rdvPoint = accepts.get(port);
+                if (rdvPoint == null) {
                     brokerListener.onWait(bm, this);
+                    return;
                 }
             }
-            channelHolder[0] = rdvPoint.connect(bm, port);
+            callback.accept(rdvPoint.connect(bm, port));
         });
+    }
 
-        // Wait for the task to complete before returning the Channel
-        while (channelHolder[0] == null) {
-            // Busy wait until the channel is assigned
-            Thread.yield();
-        }
-
-        return channelHolder[0];
+    private void onChannelReady(Channel channel) {
+        System.out.println("Channel is ready: " + channel);
     }
 }
