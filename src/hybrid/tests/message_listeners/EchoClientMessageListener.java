@@ -3,9 +3,9 @@ package hybrid.tests.message_listeners;
 import hybrid.EventPump;
 import hybrid.Message;
 import hybrid.MessageQueue;
-import hybrid.MessageQueue.Listener;
+import hybrid.MessageQueue.MessageListener;
 
-public class EchoClientMessageListener implements Listener{
+public class EchoClientMessageListener implements MessageListener{
 
 	private MessageQueue private_queue;
 	private Message private_message;

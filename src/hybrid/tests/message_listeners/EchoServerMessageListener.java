@@ -5,9 +5,9 @@ import hybrid.EventPump;
 import hybrid.EventTask;
 import hybrid.Message;
 import hybrid.MessageQueue;
-import hybrid.MessageQueue.Listener;
+import hybrid.MessageQueue.MessageListener;
 
-public class EchoServerMessageListener implements Listener{
+public class EchoServerMessageListener implements MessageListener{
 	
 	private MessageQueue message_queue;
 	//private static int cpt = 0;
