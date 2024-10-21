@@ -1,7 +1,6 @@
 package messages.tests;
 
 import channels.Broker;
-import channels.BrokerManager;
 import channels.SimpleBroker;
 import messages.QueueBroker;
 import messages.QueueBrokerImpl;
@@ -17,7 +16,7 @@ public class SingleTest {
 	private void setup() {
 
 		//Create a broker manager to manage brokers
-        BrokerManager manager = new BrokerManager();
+        //BrokerManager manager = new BrokerManager();
 		
 		Broker brokerClient = new SimpleBroker("client"); 
 		Broker brokerServer = new SimpleBroker("server");

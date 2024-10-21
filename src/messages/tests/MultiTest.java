@@ -1,7 +1,6 @@
 package messages.tests;
 
 import channels.Broker;
-import channels.BrokerManager;
 import channels.SimpleBroker;
 import messages.QueueBroker;
 import messages.QueueBrokerImpl;
@@ -16,7 +15,7 @@ public class MultiTest {
     private void setup() {
 
         // Create a broker manager to manage brokers
-        BrokerManager manager = new BrokerManager();
+        //BrokerManager manager = new BrokerManager();
 
         // Create brokers for server and clients
         Broker brokerServer = new SimpleBroker("server");
