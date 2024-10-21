@@ -1,16 +1,13 @@
 package fullevent;
 
 import java.util.HashMap;
+import java.util.function.Consumer;
 
-import channels.Broker;
-import channels.BrokerManager;
-import channels.Channel;
-import channels.Rdv;
 import hybrid.EventTask;
 
 public class EventBroker extends Broker {
 
-    private HashMap<Integer, Rdv> accepts;
+    private HashMap<Integer, EventRdv> accepts;
     private BrokerListener brokerListener;
 
     public EventBroker(String name, BrokerListener listener) {
@@ -19,20 +16,25 @@ public class EventBroker extends Broker {
         this.brokerListener = listener;
 
         // Register this broker with the singleton BrokerManager
-        BrokerManager.getInstance().registerBroker(this);
+        EventBrokerManager.getInstance().registerBroker(this);
+    }
+
+    public interface BrokerListener {
+        void onWait(Broker acceptorBroker, Broker connectorBroker);
+        void onConnect(Channel connectingChannel, Channel acceptingChannel);
     }
 
     @Override
     public Channel accept(int port) {
         EventTask task = new EventTask();
-        final Channel[] channelHolder = new Channel[1]; // Used to to hold the result of the channel connection.
+        final Channel[] channelHolder = new Channel[1]; // Used to hold the result of the channel connection.
 
         task.post(() -> {
             if (accepts.containsKey(port)) {
                 throw new IllegalArgumentException("Rendezvous point for port " + port + " already exists.");
             }
 
-            Rdv rdvPoint = new Rdv(true, this, port);
+            EventRdv rdvPoint = new EventRdv(true, this, port, brokerListener);
             accepts.put(port, rdvPoint);
             brokerListener.onWait(this, null);
             channelHolder[0] = rdvPoint.accept(this, port);
@@ -41,7 +43,7 @@ public class EventBroker extends Broker {
         // Wait for the task to complete before returning the Channel
         while (channelHolder[0] == null) {
             // Busy wait until the channel is assigned
-            // Consider improving this with proper wait/notify mechanism for efficiency
+            Thread.yield();
         }
 
         return channelHolder[0];
@@ -53,7 +55,7 @@ public class EventBroker extends Broker {
         final Channel[] channelHolder = new Channel[1]; // Used to store the Channel result
 
         task.post(() -> {
-            EventBroker targetBroker = (EventBroker) BrokerManager.getInstance().getBrokerFromBM(brokerName);
+            EventBroker targetBroker = (EventBroker) EventBrokerManager.getInstance().getBrokerFromBM(brokerName);
             if (targetBroker == null) {
                 throw new IllegalArgumentException("Broker with name " + brokerName + " not found.");
             }
@@ -63,20 +65,22 @@ public class EventBroker extends Broker {
         // Wait for the task to complete before returning the Channel
         while (channelHolder[0] == null) {
             // Busy wait until the channel is assigned
-            // Consider improving this with proper wait/notify mechanism for efficiency
+            Thread.yield();
         }
 
         return channelHolder[0];
     }
 
-    private Channel auxConnect(Broker bm, int port) {
+    private Channel auxConnect(EventBroker bm, int port) {
         EventTask task = new EventTask();
         final Channel[] channelHolder = new Channel[1]; // Used to store the Channel result
 
         task.post(() -> {
-            Rdv rdvPoint;
-            while ((rdvPoint = accepts.get(port)) == null) {
-                brokerListener.onWait(bm, this);
+            EventRdv rdvPoint;
+            synchronized (accepts) {
+                while ((rdvPoint = accepts.get(port)) == null) {
+                    brokerListener.onWait(bm, this);
+                }
             }
             channelHolder[0] = rdvPoint.connect(bm, port);
         });
@@ -84,15 +88,9 @@ public class EventBroker extends Broker {
         // Wait for the task to complete before returning the Channel
         while (channelHolder[0] == null) {
             // Busy wait until the channel is assigned
-            // Consider improving this with proper wait/notify mechanism for efficiency
+            Thread.yield();
         }
 
         return channelHolder[0];
-    }
-
-    public interface BrokerListener {
-        void onWait(Broker acceptorBroker, Broker connectorBroker);
-
-        void onConnect(Channel connectingChannel, Channel acceptingChannel);
     }
 }
