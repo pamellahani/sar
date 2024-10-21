@@ -1,19 +1,19 @@
 package hybrid.tests.message_listeners;
 
 
+import hybrid.MessageQueue;
+import hybrid.MessageQueue.MessageListener;
 import hybrid.EventPump;
 import hybrid.EventTask;
 import hybrid.Message;
-import hybrid.MessageQueue;
-import hybrid.MessageQueue.MessageListener;
 
 public class EchoServerMessageListener implements MessageListener{
 	
 	private MessageQueue message_queue;
 	//private static int cpt = 0;
 	
-	public EchoServerMessageListener(MessageQueue mq) {
-		message_queue = mq;
+	public EchoServerMessageListener(MessageQueue queue) {
+		message_queue = queue;
 	}
 
     @Override

@@ -1,17 +1,18 @@
 package fullevent.tests.message_listeners;
 
-import fullevent.EventMessageQueue;
+
+import fullevent.MessageQueue;
 import hybrid.EventPump;
 import hybrid.EventTask;
 import hybrid.Message;
-import hybrid.MessageQueue.MessageListener;
+import fullevent.MessageQueue.MessageListener;
 
 public class EchoServerMessageListener implements MessageListener {
-    private EventMessageQueue message_queue;
+    private MessageQueue message_queue;
 	//private static int cpt = 0;
 	
-	public EchoServerMessageListener(EventMessageQueue mq) {
-		message_queue = mq;
+	public EchoServerMessageListener(MessageQueue queue) {
+		message_queue = queue;
 	}
 
     @Override

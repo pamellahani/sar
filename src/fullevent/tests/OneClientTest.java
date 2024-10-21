@@ -1,9 +1,9 @@
 package fullevent.tests;
 
 import fullevent.EventQueueBroker;
+import fullevent.QueueBroker;
 import hybrid.EventPump;
 import hybrid.EventTask;
-import hybrid.QueueBroker;
 
 public class OneClientTest {
 

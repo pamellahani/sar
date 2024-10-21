@@ -1,9 +1,9 @@
 package fullevent.tests;
 
+import fullevent.MessageQueue;
+import fullevent.QueueBroker;
 import hybrid.EventPump;
-import hybrid.MessageQueue;
-import hybrid.QueueBroker;
-import hybrid.tests.message_listeners.EchoServerMessageListener;
+import fullevent.tests.message_listeners.EchoServerMessageListener;
 
 public class EchoAcceptListener implements QueueBroker.AcceptListener {
         private QueueBroker queue_broker;

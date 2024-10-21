@@ -1,6 +1,6 @@
 package fullevent.tests;
 
-import hybrid.QueueBroker;
+import fullevent.QueueBroker;
 
 public class EchoServer implements Runnable{
 	
