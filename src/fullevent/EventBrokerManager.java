@@ -28,12 +28,14 @@ public class EventBrokerManager {
         return instance;
     }
 
-    public EventBroker getBrokerFromBM(String name) {
+    public void getBrokerFromBM(String name, Consumer<EventBroker> callback) {
         EventBroker broker = brokers.get(name);
-        if (broker == null) {
-            System.out.println("Broker with name " + name + " not found.");
+        if (broker != null) {
+            callback.accept(broker);
+        } else {
+            System.out.println("Broker with name " + name + " not found. Adding request to pending list...");
+            pendingRequests.put(name, callback);
         }
-        return broker;
     }
     
     public void registerBroker(EventBroker broker) {
