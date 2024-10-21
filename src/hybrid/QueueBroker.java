@@ -14,7 +14,7 @@ public abstract class QueueBroker {
     private String brokerName;
 
     //define constructor: QueueBroker(String name)
-    QueueBroker(String name) {
+    protected QueueBroker(String name) {
         this.brokerName = name;
     }
 

@@ -11,7 +11,7 @@ public class MixedMessageQueue extends MessageQueue {
     private boolean isClosed;
     private Queue<Message> messages_linked_list;
 	private SimpleChannel mq_channel;
-	private Listener message_listener;
+	private MessageListener message_listener;
 	private Sender sender;
 
     // Accept EventPump from MixedQueueBroker
@@ -31,7 +31,7 @@ public class MixedMessageQueue extends MessageQueue {
      * @param l the listener to be set
      */
     @Override
-    public void setListener(Listener l) {
+    public void setListener(MessageListener l) {
         this.message_listener = l;
     }
 
@@ -113,7 +113,7 @@ public class MixedMessageQueue extends MessageQueue {
     }
 
     @Override
-    public Listener getMessageListener() {
+    public MessageListener getMessageListener() {
         return message_listener;
     }
 }
