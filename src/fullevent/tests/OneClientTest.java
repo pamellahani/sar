@@ -1,50 +1,62 @@
 package fullevent.tests;
 
+import fullevent.EventQueueBroker;
 import hybrid.EventPump;
 import hybrid.EventTask;
-import hybrid.MixedQueueBroker;
-import hybrid.QueueBroker;;
+import hybrid.QueueBroker;
 
 public class OneClientTest {
-    // define client tasks
-	private EventTask client; 
-	private EventTask server;
-	
-	private EchoClient runnable_client;
-	
-	private EchoServer runnable_server;
-	
-	
-	private void setup() {
 
-	    server = new EventTask();
+    private EventTask clientTask; 
+    private EventTask serverTask;
 
-		QueueBroker serverBroker = new MixedQueueBroker("serverBroker");
-	    QueueBroker clientBroker = new MixedQueueBroker("clientBroker");
-		runnable_client = new EchoClient(clientBroker);
-		runnable_server = new EchoServer(serverBroker);
-		
-	    client = new EventTask();
-		
-		EventPump.getInstance().start();
-		
-	}
-	
-	public static void main(String[] args) {
-		OneClientTest full_event = new OneClientTest();
-		full_event.setup();
-		
-		// Post client and server runnables to event pump
-		full_event.client.post(full_event.runnable_client);
-		full_event.server.post(full_event.runnable_server);
-	
-		// Wait for the event pump to complete
-		try {
-			EventPump.getInstance().join();
-			System.out.println("TEST PASSED!");
-			
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+    private EchoClient runnableClient;
+    private EchoServer runnableServer;
+
+    private QueueBroker serverBroker;
+    private QueueBroker clientBroker;
+
+    private void setup() {
+        // Set up Event Tasks
+        serverTask = new EventTask();
+        clientTask = new EventTask();
+
+        // Initialize QueueBrokers
+        serverBroker = new EventQueueBroker("serverBroker");
+        clientBroker = new EventQueueBroker("clientBroker");
+
+        // Create Server and Client Runnables
+        runnableClient = new EchoClient(clientBroker);
+        runnableServer = new EchoServer(serverBroker);
+
+        // Start the Event Pump
+        EventPump.getInstance().start();
+
+        // Post the server task first
+        serverTask.post(() -> {
+            System.out.println("Starting server...");
+            runnableServer.run();
+        });
+
+        // Register a listener for when the server is bound, then post the client task
+        ((EventQueueBroker) serverBroker).setOnBoundListener(() -> {
+            System.out.println("Server bound. Starting client...");
+            clientTask.post(() -> {
+                runnableClient.run();
+            });
+        });
+    }
+
+    public static void main(String[] args) {
+        OneClientTest fullEvent = new OneClientTest();
+        fullEvent.setup();
+
+        // Wait for the event pump to complete
+        try {
+            EventPump.getInstance().join();
+            System.out.println("TEST PASSED!");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
