@@ -1,26 +1,27 @@
+
 package fullevent;
 
-import channels.Broker;
+import fullevent.EventBroker.BrokerListener;
 import hybrid.EventTask;
 
 public class EventRdv {
 
-    private Broker brokerAcceptor;
-    private Broker brokerConnector;
+    private EventBroker brokerAcceptor;
+    private EventBroker brokerConnector;
     private EventChannel acceptingChannel;
     private EventChannel connectingChannel;
     private BrokerListener brokerListener;
 
-    public EventRdv(boolean isAcceptor, Broker broker, int port, BrokerListener listener) {
+    public EventRdv(boolean isAcceptor, EventBroker broker, int port, BrokerListener brokerListener2) {
         if (isAcceptor) {
             this.brokerAcceptor = broker;
         } else {
             this.brokerConnector = broker;
         }
-        this.brokerListener = listener;
+        this.brokerListener = (BrokerListener) brokerListener2;
     }
 
-    public void accept(Broker broker, int port) {
+    public Channel accept(EventBroker broker, int port) {
         this.brokerAcceptor = broker;
         this.acceptingChannel = new EventChannel(1024, port, brokerAcceptor);
 
@@ -33,10 +34,11 @@ public class EventRdv {
                 brokerListener.onWait(this.brokerAcceptor, this.brokerConnector);
             }
         });
+        return acceptingChannel;
     }
 
-    public void connect(Broker broker, int port) {
-        this.brokerConnector = broker;
+    public Channel connect(EventBroker bm, int port) {
+        this.brokerConnector = bm;
         this.connectingChannel = new EventChannel(1024, port, brokerConnector);
 
         // Non-blocking connection check using EventTask
@@ -48,6 +50,8 @@ public class EventRdv {
                 brokerListener.onWait(this.brokerAcceptor, this.brokerConnector);
             }
         });
+
+        return connectingChannel;
     }
 
     private void connectChannels() {
@@ -61,8 +65,4 @@ public class EventRdv {
         });
     }
 
-    public interface BrokerListener {
-        void onWait(Broker acceptorBroker, Broker connectorBroker);
-        void onConnect(EventChannel connectingChannel, EventChannel acceptingChannel);
-    }
 }

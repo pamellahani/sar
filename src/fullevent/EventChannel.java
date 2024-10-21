@@ -1,7 +1,5 @@
 package fullevent;
 
-import channels.Broker;
-import channels.Channel; //abstract class
 import channels.DisconnectedException;
 import channels.CircularBuffer;
 
@@ -22,7 +20,7 @@ public class EventChannel extends Channel {
         void onBufferNotEmpty(EventChannel channel);
     }
 
-    public EventChannel(int bufferSize, int port, Broker broker) {
+    public EventChannel(int bufferSize, int port, fullevent.Broker broker) {
         this.inBuffer = new CircularBuffer(bufferSize);
         this.outBuffer = new CircularBuffer(bufferSize);
         this.disconnected = false;
