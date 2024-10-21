@@ -2,8 +2,8 @@ package fullevent;
 
 import channels.Broker;
 import channels.Channel;
-import hybrid.QueueBroker;
 import hybrid.EventTask;
+import hybrid.QueueBroker;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +13,7 @@ public class EventQueueBroker extends QueueBroker {
     private final EventBroker br;
     private final EventTask eventTask;
     private final Map<Integer, EventMessageQueue> boundPorts;  // Keeps track of bound ports and message queues
+    private Runnable onBoundListener; // Listener for when binding is complete
 
     public EventQueueBroker(String name) {
         super(name);
@@ -42,9 +43,12 @@ public class EventQueueBroker extends QueueBroker {
                 }
                 // Simulate the binding process
                 EventMessageQueue messageQueue = new EventMessageQueue(new EventChannel(1024, port, this.getBroker()));
-                boundPorts.put(port, messageQueue); 
+                boundPorts.put(port, messageQueue);
                 listener.accepted(messageQueue);
                 System.out.println("Bound successfully to port: " + port);
+                if (onBoundListener != null) {
+                    onBoundListener.run(); // Notify that binding is complete
+                }
             } catch (Exception e) {
                 System.err.println("Failed to bind: " + e.getMessage());
             }
@@ -105,5 +109,10 @@ public class EventQueueBroker extends QueueBroker {
     @Override
     public Broker getBroker() {
         return br; 
+    }
+
+    // Set listener for when the server successfully binds to a port
+    public void setOnBoundListener(Runnable onBoundListener) {
+        this.onBoundListener = onBoundListener;
     }
 }
