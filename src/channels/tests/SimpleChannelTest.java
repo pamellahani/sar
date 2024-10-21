@@ -6,7 +6,7 @@ public class SimpleChannelTest {
     public static void main(String[] args) {
         // Test 1: Writing and Reading through SimpleChannel
         Broker clientBroker = new SimpleBroker("ClientBroker");
-        Broker serverBroker = new SimpleBroker("ServerBroker");
+       // Broker serverBroker = new SimpleBroker("ServerBroker");
 
         SimpleChannel channel = new SimpleChannel(8080, clientBroker);
         byte[] message = "Hello".getBytes();
