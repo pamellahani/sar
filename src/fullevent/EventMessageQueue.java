@@ -15,7 +15,7 @@ public class EventMessageQueue extends MessageQueue {
     private EventChannel mqChannel;
     private MessageListener messageListener;
 
-    // Accept EventChannel from MixedQueueBroker
+    // Accept EventChannel from QueueBroker
     public EventMessageQueue(EventChannel channel) {
         super();
         mqChannel = channel;
