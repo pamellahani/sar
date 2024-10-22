@@ -17,9 +17,17 @@ public abstract class Channel {
     public CircularBuffer outBuffer;
     protected boolean isDisconnected;
 
-    public abstract int read(byte[] bytes, int offset, int length) throws DisconnectedException; ;
-    public abstract int write(byte[] bytes, int offset, int length) throws DisconnectedException ;
+    public abstract boolean read(byte[] bytes) throws DisconnectedException; ;
+    public abstract boolean write(byte[] bytes) throws DisconnectedException ;
     public abstract void disconnect();
     public abstract boolean disconnected();
+
+    public interface ChannelListener {
+        public void disconnected();
+        public void read(byte[] bytes);
+        public void wrote(byte[] bytes);
     
+    }
+    
+    public abstract void setChannelListener(ChannelListener listener) ; 
 }

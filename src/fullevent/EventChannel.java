@@ -1,106 +1,146 @@
 package fullevent;
 
-import channels.DisconnectedException;
+import java.util.LinkedList;
+import java.util.Queue;
+
 import channels.CircularBuffer;
 
 public class EventChannel extends Channel {
 
-    
-    private ChannelListener listener;
-    private CircularBuffer inBuffer;
-    private CircularBuffer outBuffer;
+    private static final int MAX_BUFFER_SIZE = 1024;
+    public EventChannel otherChannel;
     private boolean disconnected;
-    private int port;
 
+    private Queue<byte[]> writerBuffer; 
+    private Queue<byte[]> readerBuffer;
 
-    public interface ChannelListener {
-        void onBufferFull(EventChannel channel);
-        void onBufferNotFull(EventChannel channel);
-        void onBufferEmpty(EventChannel channel);
-        void onBufferNotEmpty(EventChannel channel);
+    public CircularBuffer inBuffer;
+    public CircularBuffer outBuffer;
+
+    private ChannelListener channel_listener;
+
+    public boolean remaining;
+
+    public EventChannel() {
+        disconnected = false;
+        remaining = false;
+        inBuffer = new CircularBuffer(64);
+        writerBuffer = new LinkedList<>();
+        readerBuffer = new LinkedList<>();
+       //System.out.println("New EventChannel created");
     }
 
-    public EventChannel(int bufferSize, int port, fullevent.Broker broker) {
-        this.inBuffer = new CircularBuffer(bufferSize);
-        this.outBuffer = new CircularBuffer(bufferSize);
-        this.disconnected = false;
-        this.port = port;
-    }
-
+    @Override
     public void setChannelListener(ChannelListener listener) {
-        this.listener = listener;
+        channel_listener = listener;
+        //System.out.println("Channel listener set: " + listener);
     }
 
     @Override
-    public int read(byte[] bytes, int offset, int length) throws DisconnectedException {
-        if (disconnected) {
-            throw new DisconnectedException("Channel is disconnected");
+    public boolean read(byte[] bytes) {
+        //System.out.println("Reading bytes from channel");
+        if (channel_listener == null) {
+            throw new IllegalStateException("Listener not set");
         }
+        if (getReadBufferSize() + bytes.length > MAX_BUFFER_SIZE) {
+           // System.out.println("Read buffer is full");
+            return false;
+        }
+        readerBuffer.add(bytes);
+        if (readerBuffer.size() <= 1) {
+            aux_read(bytes, 0, bytes.length);
+        }
+        return true;
+    }
 
+    private void aux_read(byte[] bytes, int offset, int length) {
+        if (disconnected) {
+            return;
+        }
         if (inBuffer.empty()) {
-            if (listener != null) {
-                listener.onBufferEmpty(this);
+            if (!remaining) {
+                new EventTask().post(() -> aux_read(bytes, offset, length));
+            } else {
+                readerBuffer.clear();
             }
-            return -1; // No data to read
+            return;
         }
-
         int bytesRead = 0;
-        try {
-            while (bytesRead < length && !inBuffer.empty()) {
-                bytes[offset + bytesRead] = inBuffer.pull();
-                bytesRead++;
+        while (bytesRead < length - offset && !inBuffer.empty()) {                
+            byte value = inBuffer.pull();
+            bytes[offset + bytesRead] = value;
+            bytesRead++;
+        }
+        if (bytesRead >= length - offset) {
+            channel_listener.read(readerBuffer.poll());
+            byte[] nextBytes = readerBuffer.peek();
+            if (nextBytes != null) {
+                new EventTask().post(() -> aux_read(nextBytes, 0, nextBytes.length));
             }
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
+            return;
         }
-
-        if (listener != null && bytesRead > 0) {
-            listener.onBufferNotEmpty(this);
-        }
-
-        return bytesRead;
+        final int updatedOffset = offset + bytesRead;
+        new EventTask().post(() -> aux_read(bytes, updatedOffset, length));
     }
 
     @Override
-    public int write(byte[] bytes, int offset, int length) throws DisconnectedException {
+    public boolean write(byte[] bytes) {
+        //System.out.println("Writing bytes to channel");
+        if (channel_listener == null) {
+            throw new IllegalStateException("Listener not set");
+        }
+        if (getWriteBufferSize() + bytes.length > MAX_BUFFER_SIZE) {
+           // System.out.println("Write buffer is full");
+            return false;
+        }
+        writerBuffer.add(bytes);
+        if (writerBuffer.size() <= 1) {
+            aux_write(bytes, 0, bytes.length);
+        }
+        return true;
+    }
+
+    private void aux_write(byte[] bytes, int offset, int length) {
         if (disconnected) {
-            throw new DisconnectedException("Channel is disconnected");
+            return;
         }
-
+        if (remaining) {
+            channel_listener.wrote(writerBuffer.poll());
+            byte[] nextBytes = writerBuffer.peek();
+            if (nextBytes != null) {
+                new EventTask().post(() -> aux_write(nextBytes, 0, nextBytes.length));
+            }
+            return;
+        }
+        if (outBuffer.full()) {
+            new EventTask().post(() -> aux_write(bytes, offset, length));
+            return;
+        }
         int bytesWritten = 0;
-        try {
-            while (bytesWritten < length) {
-                if (outBuffer.full()) {
-                    if (listener != null) {
-                        listener.onBufferFull(this);
-                    }
-                    break; // Buffer is full
-                }
-                outBuffer.push(bytes[offset + bytesWritten]);
-                bytesWritten++;
-            }
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
+        while (bytesWritten < length - offset && !outBuffer.full()) {                
+            outBuffer.push(bytes[offset + bytesWritten++]);
         }
-
-        if (listener != null) {
-            if (bytesWritten > 0) {
-                listener.onBufferNotFull(this);
+        if (bytesWritten >= length - offset) {
+            channel_listener.wrote(writerBuffer.poll());
+            byte[] nextBytes = writerBuffer.peek();
+            if (nextBytes != null) {
+                new EventTask().post(() -> aux_write(nextBytes, 0, nextBytes.length));
             }
-            if (!outBuffer.empty()) {
-                listener.onBufferNotEmpty(this);
-            }
+            return;
         }
-
-        return bytesWritten;
+        final int updatedOffset = offset + bytesWritten;
+        new EventTask().post(() -> aux_write(bytes, updatedOffset, length));
     }
 
     @Override
     public void disconnect() {
         disconnected = true;
-        if (listener != null) {
-            listener.onBufferEmpty(this);
+        otherChannel.remaining = true;
+        if (channel_listener == null) {
+            throw new IllegalStateException("Listener not set");
         }
+        channel_listener.disconnected();
+        System.out.println("Channel disconnected");
     }
 
     @Override
@@ -108,78 +148,19 @@ public class EventChannel extends Channel {
         return disconnected;
     }
 
-    public void connectChannels(EventChannel other, String brokerName) {
-        // Set listeners to facilitate data transfer between channels
-        this.setChannelListener(new ChannelListener() {
-            @Override
-            public void onBufferFull(EventChannel channel) {
-                System.out.println("Buffer full on channel: " + brokerName);
-            }
-
-            @Override
-            public void onBufferNotFull(EventChannel channel) {
-                System.out.println("Buffer not full on channel: " + brokerName);
-            }
-
-            @Override
-            public void onBufferEmpty(EventChannel channel) {
-                System.out.println("Buffer empty on channel: " + brokerName);
-            }
-
-            @Override
-            public void onBufferNotEmpty(EventChannel channel) {
-                transferData(EventChannel.this, other);
-            }
-        });
-
-        other.setChannelListener(new ChannelListener() {
-            @Override
-            public void onBufferFull(EventChannel channel) {
-                System.out.println("Buffer full on accepting channel: " + brokerName);
-            }
-
-            @Override
-            public void onBufferNotFull(EventChannel channel) {
-                System.out.println("Buffer not full on accepting channel: " + brokerName);
-            }
-
-            @Override
-            public void onBufferEmpty(EventChannel channel) {
-                System.out.println("Buffer empty on accepting channel: " + brokerName);
-            }
-
-            @Override
-            public void onBufferNotEmpty(EventChannel channel) {
-                transferData(other, EventChannel.this);
-            }
-        });
-
-        System.out.println("Channels successfully connected: " + brokerName + " via port " + this.port);
+    private int getBufferSize(Queue<byte[]> buffer) {
+        int sum = 0;
+        for (byte[] bytes : buffer) {
+            sum += bytes.length;
+        }
+        return sum;
     }
 
-    private void transferData(EventChannel sourceChannel, EventChannel destinationChannel) {
-        byte[] buffer = new byte[256]; // Example buffer size
-        int bytesRead;
+    private int getWriteBufferSize() {
+        return getBufferSize(writerBuffer);
+    }
 
-        while (!sourceChannel.outBuffer.empty()) {
-            bytesRead = 0;
-            try {
-                // Pull data from source channel's outBuffer
-                while (bytesRead < buffer.length && !sourceChannel.outBuffer.empty()) {
-                    buffer[bytesRead] = sourceChannel.outBuffer.pull();
-                    bytesRead++;
-                }
-
-                // Write data to destination channel's inBuffer
-                if (bytesRead > 0) {
-                    for (int i = 0; i < bytesRead; i++) {
-                        destinationChannel.inBuffer.push(buffer[i]);
-                    }
-                }
-
-            } catch (Exception e) {
-                System.err.println("Error during channel transfer: " + e.getMessage());
-            }
-        }
+    private int getReadBufferSize() {
+        return getBufferSize(readerBuffer);
     }
 }

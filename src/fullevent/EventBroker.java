@@ -1,90 +1,79 @@
 package fullevent;
 
 import java.util.HashMap;
+import java.util.Map;
+
 import hybrid.EventTask;
-import java.util.function.Consumer;
 
 public class EventBroker extends Broker {
+    
+    private Map<Integer, AcceptListener> binds;
+    private EventBrokerManager brokerManager;
+    private String brokerName;
 
-    private HashMap<Integer, EventRdv> accepts;
-    private BrokerListener brokerListener;
-
-    public EventBroker(String name, BrokerListener listener) {
+    public EventBroker(String name) {
         super(name);
-        this.accepts = new HashMap<>();
-        this.brokerListener = listener;
-
-        // Register this broker with the singleton BrokerManager
-        EventBrokerManager.getInstance().registerBroker(this);
-    }
-
-    public interface BrokerListener {
-        void onWait(Broker acceptorBroker, Broker connectorBroker);
-        void onConnect(Channel connectingChannel, Channel acceptingChannel);
+        brokerManager = EventBrokerManager.getInstance();
+        brokerName = name;
+        brokerManager.registerBroker(this);
+        binds = new HashMap<>();
+        //System.out.println("EventBroker created with name: " + name);
     }
 
     @Override
-    public Channel accept(int port) {
-        EventTask task = new EventTask();
-        final Channel[] channelHolder = new Channel[1]; // Used to hold the result of the channel connection.
-
-        task.post(() -> {
-            if (accepts.containsKey(port)) {
-                throw new IllegalArgumentException("Rendezvous point for port " + port + " already exists.");
-            }
-
-            EventRdv rdvPoint = new EventRdv(true, this, port, brokerListener);
-            accepts.put(port, rdvPoint);
-            brokerListener.onWait(this, null);
-            channelHolder[0] = rdvPoint.accept(this, port);
-
-            if (channelHolder[0] != null) {
-                onChannelReady(channelHolder[0]);
-            }
-        });
-
-        return null; // Return null initially, callback will handle the channel once ready
+    public boolean unbind(int port) {
+        if (!binds.containsKey(port)) {
+            return false;
+        }
+        binds.remove(port);
+        //System.out.println("Unbind successful on port: " + port);
+        return true;
     }
 
     @Override
-    public Channel connect(String brokerName, int port) {
-        EventTask task = new EventTask();
-        final Channel[] channelHolder = new Channel[1]; // Used to store the Channel result
-
-        task.post(() -> {
-            EventBrokerManager.getInstance().getBrokerFromBM(brokerName, targetBroker -> {
-                if (targetBroker == null) {
-                    throw new IllegalArgumentException("Broker with name " + brokerName + " not found.");
-                }
-                auxConnect(targetBroker, port, channel -> {
-                    channelHolder[0] = channel;
-                    if (channelHolder[0] != null) {
-                        onChannelReady(channelHolder[0]);
-                    }
-                });
-            });
-        });
-
-        return null; // Return null initially, callback will handle the channel once ready
+    public boolean bind(int port, AcceptListener listener) {
+        if (binds.containsKey(port)) {
+            return false;
+        }
+        binds.put(port, listener);
+       // System.out.println("Bind successful on port: " + port);
+        return true;
     }
 
-    private void auxConnect(EventBroker bm, int port, Consumer<Channel> callback) {
-        EventTask task = new EventTask();
-
-        task.post(() -> {
-            EventRdv rdvPoint;
-            synchronized (accepts) {
-                rdvPoint = accepts.get(port);
-                if (rdvPoint == null) {
-                    brokerListener.onWait(bm, this);
-                    return;
-                }
-            }
-            callback.accept(rdvPoint.connect(bm, port));
-        });
+    @Override
+    public boolean connect(String name, int port, ConnectListener listener) {
+        EventBroker broker = brokerManager.getBroker(name);
+        if (broker == null) {
+            listener.refused();
+            //System.out.println("Connection refused: broker not found");
+            return false;
+        } else {
+            broker.aux_connect(port, listener);
+           // System.out.println("Connection successful to broker: " + name + " on port: " + port);
+            return true;
+        }
     }
 
-    private void onChannelReady(Channel channel) {
-        System.out.println("Channel is ready: " + channel);
+    private void aux_connect(int port, ConnectListener listener) {
+        if (binds.containsKey(port)) {
+            EventChannel channelAccept = new EventChannel();
+            EventChannel channelConnect = new EventChannel();
+
+            channelAccept.otherChannel = channelConnect;
+            channelConnect.otherChannel = channelAccept;
+
+            channelAccept.outBuffer = channelConnect.inBuffer;
+            channelConnect.outBuffer = channelAccept.inBuffer;
+
+            listener.connected(channelConnect);
+            binds.get(port).accepted(channelAccept);
+            //System.out.println("Aux connect successful on port: " + port);
+        } else {
+            new EventTask().post(() -> aux_connect(port, listener));
+        }
+    }
+
+    public String getName() {
+        return brokerName;
     }
 }
