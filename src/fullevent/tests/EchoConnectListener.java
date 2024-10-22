@@ -3,43 +3,63 @@ package fullevent.tests;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
-
+import channels.DisconnectedException;
 import fullevent.*;
-import fullevent.tests.message_listeners.EchoClientMessageListener;
-import hybrid.Message;
+import fullevent.Broker.ConnectListener;
+import fullevent.tests.channel_listeners.EchoClientChannelListener;
 
+public class EchoConnectListener implements ConnectListener {
 
-public class EchoConnectListener implements QueueBroker.ConnectListener{
+    private static final Random random = new Random();
+    private static final int MIN_HEIGHT = 2;   // Minimum message length
+    private static final int MAX_HEIGHT = 10;  // Maximum message length
+
     @Override
-    public void connected(MessageQueue messageQueue) {
-        // Generate a random message instead of a static "Hello Server" message
-        String randomMessage = generateRandomMessage();
-        Message message = new Message(randomMessage.getBytes(StandardCharsets.UTF_8), 0, randomMessage.length());
+    public void connected(Channel channel) {
 
-        // Set the listener and send the random message
-        messageQueue.setListener(new EchoClientMessageListener(messageQueue, message));
-        System.out.println("Connected to the server");
-        messageQueue.send(message);
-        System.out.println("Message was sent");
+        // Generate random messages
+        byte[] bytes1 = generateRandomMessage();
+        byte[] bytes2 = generateRandomMessage();
+        byte[] bytes3 = generateRandomMessage();
+
+        // Set the channel listener
+        channel.setChannelListener(new EchoClientChannelListener(bytes1, bytes2, bytes3, channel));
+
+        // Array of byte arrays to choose from
+        byte[][] messages = { bytes1, bytes2, bytes3 };
+
+        // Post a task to randomly write one of the byte arrays
+        new EventTask().post(() -> {
+            try {
+                // Randomly select a message
+                byte[] randomMessage = messages[random.nextInt(messages.length)];
+                System.out.println("Client sending message: " + new String(randomMessage, StandardCharsets.UTF_8));
+                channel.write(randomMessage);
+            } catch (DisconnectedException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
     public void refused() {
-        System.out.println("Connection refused by the server.");
+        throw new IllegalStateException("Connection refused");
     }
 
-    // Method to generate a random string of alphabetic characters
-    private String generateRandomMessage() {
-        Random random = new Random();
-        int length = random.nextInt(4990) + 10;  // Random length between 10 and 5000
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        StringBuilder messageBuilder = new StringBuilder(length);
+    // Method to generate a random message with random height
+    private byte[] generateRandomMessage() {
+        // Generate a random height (length of the message)
+        int height = MIN_HEIGHT + random.nextInt(MAX_HEIGHT - MIN_HEIGHT + 1);
 
-        for (int i = 0; i < length; i++) {
-            messageBuilder.append(characters.charAt(random.nextInt(characters.length())));
+        // Generate a random string of the specified length
+        StringBuilder messageBuilder = new StringBuilder();
+        for (int i = 0; i < height; i++) {
+            // Generate a random character (ASCII range 33 to 126 for printable characters)
+            char randomChar = (char) (33 + random.nextInt(94));
+            messageBuilder.append(randomChar);
         }
 
-        return messageBuilder.toString();
+        // Convert the message to bytes
+        return messageBuilder.toString().getBytes(StandardCharsets.UTF_8);
     }
 }
-

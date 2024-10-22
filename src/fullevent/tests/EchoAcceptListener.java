@@ -1,33 +1,50 @@
 package fullevent.tests;
 
-import fullevent.MessageQueue;
-import fullevent.QueueBroker;
-import hybrid.EventPump;
-import fullevent.tests.message_listeners.EchoServerMessageListener;
+import channels.DisconnectedException;
+import fullevent.Broker.AcceptListener;
+import fullevent.Channel;
+import fullevent.EventTask;
+import fullevent.tests.channel_listeners.EchoServerChannelListener;
 
-public class EchoAcceptListener implements QueueBroker.AcceptListener {
-        private QueueBroker queue_broker;
-	//private int client_counter = 0;
-	
-	 public EchoAcceptListener(QueueBroker qb) {
-		queue_broker = qb;
-	}
+
+
+public class EchoAcceptListener implements AcceptListener{
 
 	@Override
-	public void accepted(MessageQueue queue) {
-		queue.setListener(new EchoServerMessageListener(queue));
-		System.out.println("Client connected.");
-	
-		// Unbind immediately after accepting one client to prevent multiple connections
-		queue_broker.unbind(8080);
-
-		//pump should be stopped after receiving the response
-		queue.getMessageListener().received(new byte[0]); 
+	public void accepted(Channel channel) {
 		
-		System.out.println("Server unbound from port 8080 to stop further connections.");
+		channel.setChannelListener(new EchoServerChannelListener(channel));
+		
+		byte[] bytes1 = new byte[360];
+		byte[] bytes2 = new byte[360];
+		byte[] bytes3 = new byte[360];
 
-		EventPump.getInstance().stopPump();
+
+		
+		EventTask task = new EventTask();
+		task.post(() -> {
+			try {
+				channel.read(bytes1);
+			} catch (DisconnectedException e) {
+				e.printStackTrace();
+			}
+		});
+		task.post(() -> {
+			try {
+				channel.read(bytes2);
+			} catch (DisconnectedException e) {
+				e.printStackTrace();
+			}
+		});
+		task.post(() -> {
+			try {
+				channel.read(bytes3);
+			} catch (DisconnectedException e) {
+				e.printStackTrace();
+			}
+		});
+
 	}
-	
-	
+
 }
+	
