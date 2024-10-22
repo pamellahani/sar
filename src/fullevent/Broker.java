@@ -10,21 +10,31 @@ package fullevent;
  * </p>
  */
 public abstract class Broker {
-    protected final String name;  // Made final as the broker's name should not change
-   // protected final BrokerManager manager;
+
+    protected final String name;
 
     public Broker(String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Broker name cannot be null or empty.");
         }
         this.name = name;
+        System.out.println("Broker created: " + name);
     }
 
     public String getName() {
         return name;
     }
 
-    // Abstract methods to be implemented by subclasses
-    public abstract Channel accept(int port);
-    public abstract Channel connect(String name, int port);
+    public abstract boolean connect(String name, int port, ConnectListener listener);
+    public abstract boolean bind(int port, AcceptListener listener);
+    public abstract boolean unbind(int port);
+
+    public interface AcceptListener {
+        void accepted(Channel channel);
+    }
+
+    public interface ConnectListener {
+        void connected(Channel channel);
+        void refused();
+    }
 }
