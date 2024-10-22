@@ -1,54 +1,46 @@
 package fullevent.tests.channel_listeners;
 
 import channels.DisconnectedException;
-import fullevent.EventChannel;
+import fullevent.Channel;
+import fullevent.Channel.ChannelListener;
+import fullevent.EventTask;
 
-public class EchoServerChannelListener implements EventChannel.ChannelListener {
+public class EchoServerChannelListener implements ChannelListener {
+	
+	private static int counter = 0;
+	private int writerCounter = 0;
+	private Channel echoChannel;
+	
+	public EchoServerChannelListener(Channel channel) {
+		echoChannel = channel;
+	}
 
-    private final EventChannel channel;
+	@Override
+	public void read(byte[] bytes) {
+		System.out.println("Server received message: " + new String(bytes));
 
-    public EchoServerChannelListener(EventChannel channel) {
-        this.channel = channel;
-        this.channel.setChannelListener(this);
-    }
+		new EventTask().post(() -> {
+			try {
+				System.out.println("Server writing message back: " + new String(bytes));
+				echoChannel.write(bytes);
+			} catch (DisconnectedException e) {
+				e.printStackTrace();
+			}
+		});
+	}
 
-    @Override
-    public void onBufferFull(EventChannel channel) {
-        System.out.println("Server buffer is full, cannot accept more data at the moment.");
-    }
+	@Override
+	public void disconnected() {
+		assert (echoChannel.disconnected() == true) : "Channel is still connected";
+		if (counter++ >= 2) {
+			System.out.println("Server passed.");
+		}
+	}
 
-    @Override
-    public void onBufferNotFull(EventChannel channel) {
-        System.out.println("Server buffer has space, can resume accepting data.");
-    }
-
-    @Override
-    public void onBufferEmpty(EventChannel channel) {
-        System.out.println("Server buffer is empty, waiting for client to send data.");
-    }
-
-    @Override
-    public void onBufferNotEmpty(EventChannel channel) {
-        byte[] buffer = new byte[256];
-        int bytesRead = -1;
-        try {
-            bytesRead = channel.read(buffer, 0, buffer.length);
-        } catch (DisconnectedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        if (bytesRead > 0) {
-            String message = new String(buffer, 0, bytesRead);
-            System.out.println("Server received message: " + message);
-            // Echo the message back to the client
-            try {
-                channel.write(buffer, 0, bytesRead);
-            } catch (DisconnectedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            System.out.println("Server echoed message back to client.");
-        }
-    }
-
+	@Override
+	public void wrote(byte[] bytes) {
+		if (writerCounter++ >= 2) {
+			echoChannel.disconnect();
+		}
+	}
 }

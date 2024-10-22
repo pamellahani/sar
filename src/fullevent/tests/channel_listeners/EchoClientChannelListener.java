@@ -1,59 +1,71 @@
 package fullevent.tests.channel_listeners;
 
-import java.nio.charset.StandardCharsets;
-
 import channels.DisconnectedException;
-import fullevent.EventChannel;
+import fullevent.Channel;
+import fullevent.Channel.ChannelListener;
+import fullevent.EventTask;
 
-public class EchoClientChannelListener implements EventChannel.ChannelListener {
+public class EchoClientChannelListener implements ChannelListener {
+	
+	private byte[] bytesClient1;
+	private byte[] bytesClient2;
+	private byte[] bytesClient3;
 
+	private Channel echoChannel;
+	private int cpt = 0;
+	
+	public EchoClientChannelListener(byte[] bytes1, byte[] bytes2, byte[] bytes3, Channel channel) {
+		bytesClient1 = bytes1;
+		bytesClient2 = bytes2;
+		bytesClient3 = bytes3;
+		echoChannel = channel;
+	}
 
-    private final EventChannel channel;
-    private final String messageToSend;
+	@Override
+	public void read(byte[] bytes) {
+		System.out.println("Client received message: " + new String(bytes));
 
-    public EchoClientChannelListener(EventChannel channel, String messageToSend) throws DisconnectedException {
-        this.channel = channel;
-        this.messageToSend  = messageToSend;
-        this.channel.setChannelListener(this);
-        sendInitialMessage();
-    }
+		if (bytes[0] == 1) {
+			for (int i = 0; i < bytesClient1.length; i++) {
+				if (bytesClient1[i] != bytes[i]) {
+					System.err.println("Data received different from the one sent at index: " + i);
+				}
+			}
+		} else if (bytes[0] == 2) {
+			for (int i = 0; i < bytesClient2.length; i++) {
+				if (bytesClient2[i] != bytes[i]) {
+					System.err.println("Data received different from the one sent at index: " + i);
+				}
+			}
+		} else if (bytes[0] == 3) {
+			for (int i = 0; i < bytesClient3.length; i++) {
+				if (bytesClient3[i] != bytes[i]) {
+					System.err.println("Data received different from the one sent at index: " + i);
+				}
+			}
+		}
 
-    private void sendInitialMessage() throws DisconnectedException {
-        byte[] messageBytes = messageToSend.getBytes(StandardCharsets.UTF_8);
-        channel.write(messageBytes, 0, messageBytes.length);
-        System.out.println("Client sent message: " + messageToSend);
-    }
+		if (cpt++ >= 2) {
+			echoChannel.disconnect();
+		}
+	}
 
-    @Override
-    public void onBufferFull(EventChannel channel) {
-        System.out.println("Client buffer is full, waiting to send more data.");
-    }
+	@Override
+	public void disconnected() {
+		assert (echoChannel.disconnected() == true) : "Channel is not disconnected";
+		System.out.println("Client disconnected.");
+	}
 
-    @Override
-    public void onBufferNotFull(EventChannel channel) {
-        System.out.println("Client buffer has space, can continue writing.");
-    }
-
-    @Override
-    public void onBufferEmpty(EventChannel channel) {
-        System.out.println("Client buffer is empty, waiting for new data.");
-    }
-
-    @Override
-    public void onBufferNotEmpty(EventChannel channel) {
-        byte[] buffer = new byte[256];
-        int bytesRead = -1;
-        try {
-            bytesRead = channel.read(buffer, 0, buffer.length);
-        } catch (DisconnectedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        if (bytesRead > 0) {
-            String receivedMessage = new String(buffer, 0, bytesRead, StandardCharsets.UTF_8);
-            System.out.println("Client received message: " + receivedMessage);
-        }
-    }
-    
-    
+	@Override
+	public void wrote(byte[] bytes) {
+		System.out.println("Client wrote message: " + new String(bytes));
+		byte[] answer = new byte[bytes.length];
+		new EventTask().post(() -> {
+			try {
+				echoChannel.read(answer);
+			} catch (DisconnectedException e) {
+				// e.printStackTrace();
+			}
+		});
+	}
 }
