@@ -1,4 +1,4 @@
-package fullevent;
+package fulleventchannel;
 
 /**
  * Event to trigger the shutdown of the EventPump and the end of the program

@@ -1,4 +1,4 @@
-package fullevent;
+package fulleventchannel;
 
 import channels.CircularBuffer;
 import channels.DisconnectedException;

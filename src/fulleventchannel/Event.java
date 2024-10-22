@@ -1,4 +1,4 @@
-package fullevent;
+package fulleventchannel;
 
 public class Event implements Runnable{
 

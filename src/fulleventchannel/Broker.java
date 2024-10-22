@@ -1,4 +1,4 @@
-package fullevent; 
+package fulleventchannel; 
 
 /**
  * The {@code Broker} class serves as an abstract base class for creating and managing
