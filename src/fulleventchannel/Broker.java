@@ -25,6 +25,7 @@ public abstract class Broker {
         return name;
     }
 
+    public abstract boolean accept(int port, AcceptListener listener);
     public abstract boolean connect(String name, int port, ConnectListener listener);
     public abstract boolean bind(int port, AcceptListener listener);
     public abstract boolean unbind(int port);

@@ -41,14 +41,14 @@ public class EventBroker extends Broker {
     }
 
     @Override
-    public boolean connect(String name, int port, ConnectListener listener) {
+    public boolean connect(String name, int port, ConnectListener connectListener) {
         EventBroker broker = brokerManager.getBroker(name);
         if (broker == null) {
-            listener.refused();
+            connectListener.refused();
             //System.out.println("Connection refused: broker not found");
             return false;
         } else {
-            broker.aux_connect(port, listener);
+            broker.aux_connect(port, connectListener);
            // System.out.println("Connection successful to broker: " + name + " on port: " + port);
             return true;
         }
@@ -75,5 +75,14 @@ public class EventBroker extends Broker {
 
     public String getName() {
         return brokerName;
+    }
+
+    @Override
+    public boolean accept(int port, AcceptListener listener) {
+        if (binds.containsKey(port)) {
+            listener.accepted(new EventChannel());
+            return true;
+        }
+        return false;
     }
 }
