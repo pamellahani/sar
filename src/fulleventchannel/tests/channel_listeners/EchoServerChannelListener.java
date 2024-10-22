@@ -1,9 +1,9 @@
-package fullevent.tests.channel_listeners;
+package fulleventchannel.tests.channel_listeners;
 
 import channels.DisconnectedException;
-import fullevent.Channel;
-import fullevent.Channel.ChannelListener;
-import fullevent.EventTask;
+import fulleventchannel.Channel;
+import fulleventchannel.EventTask;
+import fulleventchannel.Channel.ChannelListener;
 
 public class EchoServerChannelListener implements ChannelListener {
 	

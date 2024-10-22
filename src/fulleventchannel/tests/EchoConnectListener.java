@@ -1,12 +1,12 @@
-package fullevent.tests;
+package fulleventchannel.tests;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 import channels.DisconnectedException;
-import fullevent.*;
-import fullevent.Broker.ConnectListener;
-import fullevent.tests.channel_listeners.EchoClientChannelListener;
+import fulleventchannel.*;
+import fulleventchannel.Broker.ConnectListener;
+import fulleventchannel.tests.channel_listeners.EchoClientChannelListener;
 
 public class EchoConnectListener implements ConnectListener {
 

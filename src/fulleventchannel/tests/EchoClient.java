@@ -1,8 +1,8 @@
-package fullevent.tests;
+package fulleventchannel.tests;
 
-import fullevent.Broker;
-import fullevent.EventPump;
-import fullevent.ShutdownEvent;
+import fulleventchannel.Broker;
+import fulleventchannel.EventPump;
+import fulleventchannel.ShutdownEvent;
 
 public class EchoClient implements Runnable {
 

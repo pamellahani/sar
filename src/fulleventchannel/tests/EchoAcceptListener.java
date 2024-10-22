@@ -1,10 +1,10 @@
-package fullevent.tests;
+package fulleventchannel.tests;
 
 import channels.DisconnectedException;
-import fullevent.Broker.AcceptListener;
-import fullevent.Channel;
-import fullevent.EventTask;
-import fullevent.tests.channel_listeners.EchoServerChannelListener;
+import fulleventchannel.Channel;
+import fulleventchannel.EventTask;
+import fulleventchannel.Broker.AcceptListener;
+import fulleventchannel.tests.channel_listeners.EchoServerChannelListener;
 
 public class EchoAcceptListener implements AcceptListener {
 

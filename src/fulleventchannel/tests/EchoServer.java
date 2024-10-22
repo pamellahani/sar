@@ -1,6 +1,6 @@
-package fullevent.tests;
+package fulleventchannel.tests;
 
-import fullevent.EventBroker;
+import fulleventchannel.EventBroker;
 
 public class EchoServer implements Runnable{
 

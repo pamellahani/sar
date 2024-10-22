@@ -1,9 +1,9 @@
-package fullevent.tests;
+package fulleventchannel.tests;
 
-import fullevent.ClientCompletionTracker;
-import fullevent.EventBroker;
-import fullevent.EventPump;
-import fullevent.EventTask;
+import fulleventchannel.ClientCompletionTracker;
+import fulleventchannel.EventBroker;
+import fulleventchannel.EventPump;
+import fulleventchannel.EventTask;
 
 public class MultiClientTest {
 

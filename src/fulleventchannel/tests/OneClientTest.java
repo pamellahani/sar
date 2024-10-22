@@ -1,4 +1,4 @@
-package fullevent.tests;
+package fulleventchannel.tests;
 
 public class OneClientTest {
 
