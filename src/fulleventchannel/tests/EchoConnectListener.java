@@ -12,7 +12,7 @@ public class EchoConnectListener implements ConnectListener {
 
     private static final Random random = new Random();
     private static final int MIN_HEIGHT = 2;   // Minimum message length
-    private static final int MAX_HEIGHT = 10;  // Maximum message length
+    private static final int MAX_HEIGHT = 50;  // Maximum message length
 
     @Override
     public void connected(Channel channel) {

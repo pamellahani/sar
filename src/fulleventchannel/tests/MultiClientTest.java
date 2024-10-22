@@ -12,6 +12,7 @@ public class MultiClientTest {
     private EventTask client1;
     private EventTask client2;
     private EventTask client3;
+    private EventTask client4;
     private EventTask server;
 
     private void setup() {
@@ -26,9 +27,11 @@ public class MultiClientTest {
         client1 = new EventTask();
         client2 = new EventTask();
         client3 = new EventTask();
+        client4 = new EventTask();
+
 
         // Set the total number of clients dynamically
-        int totalClients = 3; // Here, 3 clients are being created
+        int totalClients = 4; // Here, 4 clients are being created
         ClientCompletionTracker.setTotalClients(totalClients);
     }
 
@@ -44,6 +47,7 @@ public class MultiClientTest {
         test.client1.post(test.clientRunnable);
         test.client2.post(test.clientRunnable);
         test.client3.post(test.clientRunnable);
+        test.client4.post(test.clientRunnable);
 
         EventPump.getInstance().run();
 
