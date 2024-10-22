@@ -1,20 +1,24 @@
 package fullevent.tests;
 
-import fullevent.QueueBroker;
+import fullevent.EventBroker;
 
 public class EchoServer implements Runnable{
+
+	private EventBroker eventBroker;
 	
-    private QueueBroker queue_broker;
-        
-        public EchoServer(QueueBroker qb) {
-            queue_broker = qb;
-        }
-    
-    
-        @Override
-        public void run() {
-            System.out.println("Server is running");
-            queue_broker.bind(8080, new EchoAcceptListener(queue_broker));
-            
-        }
+	public EchoServer(EventBroker broker) {
+		eventBroker = broker;
+	}
+
+	@Override
+	public void run() {
+		eventBroker.bind(8080, new EchoAcceptListener());
+		// if (success) {
+		// 	System.out.println("Server successfully bound to port 8080");
+		// } else {
+		// 	System.out.println("Failed to bind server to port 8080");
+		// }
+	}
+	
+
 }
