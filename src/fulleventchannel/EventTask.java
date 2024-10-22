@@ -1,4 +1,4 @@
-package fullevent;
+package fulleventchannel;
 
 import java.util.LinkedList;
 import java.util.List;
